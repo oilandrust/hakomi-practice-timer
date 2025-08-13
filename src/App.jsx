@@ -15,6 +15,29 @@ function App() {
   const [rounds, setRounds] = useState(2)
   const [breakMinutes, setBreakMinutes] = useState(0)
 
+  // Convert total minutes to hours and minutes for display
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+
+  // Handle preset button clicks
+  const handlePreset = (presetMinutes) => {
+    setTotalMinutes(presetMinutes)
+  }
+
+  // Handle hours input change
+  const handleHoursChange = (e) => {
+    const newHours = Number(e.target.value) || 0
+    const newMinutes = minutes
+    setTotalMinutes(newHours * 60 + newMinutes)
+  }
+
+  // Handle minutes input change
+  const handleMinutesChange = (e) => {
+    const newMinutes = Number(e.target.value) || 0
+    const newHours = hours
+    setTotalMinutes(newHours * 60 + newMinutes)
+  }
+
   const { availableMinutes, perRoundMinutes, error } = useMemo(() => {
     const available = Number.isFinite(totalMinutes) && Number.isFinite(breakMinutes)
       ? Math.max(0, (totalMinutes || 0) - (breakMinutes || 0))
@@ -33,39 +56,84 @@ function App() {
 
   return (
     <section>
-
       <form>
         <div className="grid">
           <label>
             Total session
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step={1}
-              value={totalMinutes}
-              onChange={(e) => setTotalMinutes(Number(e.target.value))}
-              placeholder="e.g., 60"
-            />
-            <small>minutes</small>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={() => handlePreset(60)}
+                className={totalMinutes === 60 ? 'secondary' : 'outline'}
+              >
+                60 min
+              </button>
+              <button 
+                type="button" 
+                onClick={() => handlePreset(90)}
+                className={totalMinutes === 90 ? 'secondary' : 'outline'}
+              >
+                90 min
+              </button>
+              <button 
+                type="button" 
+                onClick={() => handlePreset(120)}
+                className={totalMinutes === 120 ? 'secondary' : 'outline'}
+              >
+                2 hours
+              </button>
+            </div>
+            <div className="time-inputs">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                value={hours}
+                onChange={handleHoursChange}
+                placeholder="0"
+                style={{ width: '80px' }}
+              />
+              <span>hr</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                max={59}
+                value={minutes}
+                onChange={handleMinutesChange}
+                placeholder="0"
+                style={{ width: '80px' }}
+              />
+              <span>min</span>
+            </div>
           </label>
-
+        </div>
+        
+        <div className="grid" style={{ marginTop: '1rem' }}>
           <label>
             Rounds
-            <input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              step={1}
-              value={rounds}
-              onChange={(e) => setRounds(Number(e.target.value))}
-              placeholder="2 or 3"
-            />
-            <small>usually 2–3</small>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={() => setRounds(2)}
+                className={rounds === 2 ? 'secondary' : 'outline'}
+              >
+                2 rounds
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setRounds(3)}
+                className={rounds === 3 ? 'secondary' : 'outline'}
+              >
+                3 rounds
+              </button>
+            </div>
           </label>
 
           <label>
-            Total break time
+            Break
             <input
               type="number"
               inputMode="numeric"
@@ -75,7 +143,6 @@ function App() {
               onChange={(e) => setBreakMinutes(Number(e.target.value))}
               placeholder="e.g., 10"
             />
-            <small>minutes (all breaks combined)</small>
           </label>
         </div>
       </form>
@@ -87,14 +154,16 @@ function App() {
       ) : (
         <article style={{ marginTop: '0.75rem' }}>
           <header>
-            <strong>Per-round time</strong>
+            <strong>Practice Session</strong>
           </header>
           <p style={{ fontSize: '1.25rem', margin: 0 }}>
-            {formatMinutes(perRoundMinutes)}
+            {rounds} round{rounds > 1 ? 's' : ''} of {formatMinutes(perRoundMinutes)}
           </p>
-          <footer>
-            <small>Available practice time: {formatMinutes(availableMinutes)}</small>
-          </footer>
+          {breakMinutes > 0 && (
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '1rem' }}>
+              {formatMinutes(breakMinutes)} break
+            </p>
+          )}
         </article>
       )}
 
