@@ -74,3 +74,8 @@ button.outline:hover {
 .time-inputs input {
   text-align: center;
 }
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+  accent-color: #0066cc !important;
+}
