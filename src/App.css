@@ -1,44 +1,59 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0.25rem 2rem 2rem 2rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Remove all top spacing */
+section {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+body {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Override Pico CSS and remove main element spacing */
+main {
+  margin-top: 0.5rem !important;
+  padding-top: 0 !important;
 }
 
-.card {
-  padding: 2em;
+html {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
-.read-the-docs {
-  color: #888;
+/* Remove any default margins from the root div */
+#root {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Reduce spacing between form sections */
+.grid {
+  margin-top: 0.5rem !important;
+}
+
+/* Reduce spacing in the result section */
+article {
+  margin-top: 0.5rem !important;
+}
+
+/* Reduce spacing around the time display */
+.time-inputs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.time-inputs input {
+  text-align: center;
 }
 
 /* Custom button styles for better contrast */
@@ -61,18 +76,6 @@ button.outline {
 
 button.outline:hover {
   background-color: #f0f8ff !important;
-}
-
-/* Center the time input fields */
-.time-inputs {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.time-inputs input {
-  text-align: center;
 }
 
 /* Custom checkbox styling */
