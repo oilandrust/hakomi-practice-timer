@@ -146,15 +146,18 @@ function App() {
 
           <label>
             Break
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step={1}
-              value={breakMinutes}
-              onChange={(e) => setBreakMinutes(Number(e.target.value))}
-              placeholder="e.g., 10"
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                value={breakMinutes}
+                onChange={(e) => setBreakMinutes(Number(e.target.value))}
+                placeholder="e.g., 10"
+              />
+              <span>min</span>
+            </div>
           </label>
         </div>
         
@@ -210,15 +213,35 @@ function App() {
               {formatMinutes(breakMinutes)} break
             </p>
           )}
-          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', opacity: 0.8 }}>
-            Start {formatTime(startTime)}, ends {formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0 0 0', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+              Start {formatTime(startTime)}, end {formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}
+            </span>
+            <button 
+              type="button" 
+              onClick={() => setStartTime(new Date())}
+              style={{ 
+                fontSize: '1rem', 
+                padding: '0.2rem',
+                opacity: 0.6,
+                background: 'transparent',
+                border: '1px solid rgba(0,0,0,0.15)',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                width: '20px',
+                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(0,0,0,0.6)'
+              }}
+              title="Update start time"
+            >
+              ↻
+            </button>
+          </div>
         </article>
       )}
-
-      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-        <button type="button" onClick={() => { setTotalMinutes(60); setRounds(2); setBreakMinutes(0); setLandingMinutes(5); setIncludeLanding(true); setStartTime(new Date()) }}>Reset</button>
-      </div>
     </section>
   )
 }
