@@ -22,8 +22,8 @@ function App() {
   const [totalMinutes, setTotalMinutes] = useState(60)
   const [rounds, setRounds] = useState(2)
   const [breakMinutes, setBreakMinutes] = useState(0)
-  const [landingMinutes, setLandingMinutes] = useState(3)
-  const [includeLanding, setIncludeLanding] = useState(true)
+  const [landingMinutes, setLandingMinutes] = useState(0)
+  const [includeLanding, setIncludeLanding] = useState(false)
   const [startTime, setStartTime] = useState(new Date())
   const [timingMode, setTimingMode] = useState('during') // 'during' or 'until'
   const [targetEndTime, setTargetEndTime] = useState(null) // Store target end time for "until" mode
