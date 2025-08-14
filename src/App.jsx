@@ -27,6 +27,9 @@ function App() {
   const [startTime, setStartTime] = useState(new Date())
   const [timingMode, setTimingMode] = useState('during') // 'during' or 'until'
   const [targetEndTime, setTargetEndTime] = useState(null) // Store target end time for "until" mode
+  const [showTimer, setShowTimer] = useState(false)
+  const [timerRunning, setTimerRunning] = useState(false)
+  const [timerSeconds, setTimerSeconds] = useState(0)
 
   // Convert total minutes to hours and minutes for display
   const hours = Math.floor(totalMinutes / 60)
@@ -126,6 +129,38 @@ function App() {
       setStartTime(newStartTime)
     }
   }, [timingMode, targetEndTime, breakMinutes, landingMinutes, includeLanding, availableMinutes])
+
+  // Timer effect
+  useEffect(() => {
+    let interval = null
+    if (timerRunning && timerSeconds > 0) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => {
+          if (prev <= 1) {
+            setTimerRunning(false)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [timerRunning, timerSeconds])
+
+  // Start timer function
+  const startTimer = () => {
+    setTimerSeconds(perRoundMinutes * 60)
+    setTimerRunning(true)
+  }
+
+  // Format timer display
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 
   return (
     <section>
@@ -509,6 +544,68 @@ function App() {
             </button>
           </footer>
         </article>
+      )}
+
+      {/* Let's go button and timer section */}
+      <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+        <button
+          type="button"
+          onClick={() => {
+            setShowTimer(true)
+            // Scroll to the timer section
+            setTimeout(() => {
+              document.getElementById('timer-section')?.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              })
+            }, 100)
+          }}
+          style={{
+            width: '100%',
+            padding: '1rem',
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            background: 'var(--pico-primary)',
+            color: 'var(--pico-primary-inverse)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          Let's go!
+        </button>
+      </div>
+
+      {showTimer && (
+        <div id="timer-section" style={{ marginTop: '2rem', textAlign: 'center' }}>
+          <div style={{ 
+            fontSize: '3rem', 
+            fontWeight: 'bold', 
+            fontFamily: 'monospace',
+            marginBottom: '1rem',
+            color: timerRunning ? 'var(--pico-primary)' : 'inherit'
+          }}>
+            {formatTimer(timerSeconds)}
+          </div>
+          <button
+            type="button"
+            onClick={startTimer}
+            disabled={timerRunning}
+            style={{
+              padding: '0.75rem 1.5rem',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              background: timerRunning ? 'var(--pico-muted-color)' : 'var(--pico-primary)',
+              color: 'var(--pico-primary-inverse)',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: timerRunning ? 'not-allowed' : 'pointer',
+              opacity: timerRunning ? 0.6 : 1
+            }}
+          >
+            {timerRunning ? 'Timer Running...' : `Start ${perRoundMinutes} min round`}
+          </button>
+        </div>
       )}
     </section>
   )
