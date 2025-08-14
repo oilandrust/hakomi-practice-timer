@@ -149,17 +149,35 @@ function App() {
         <div className="grid" style={{ marginTop: '1rem' }}>
           <label>
             Break
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step={1}
-                value={breakMinutes}
-                onChange={(e) => setBreakMinutes(Number(e.target.value))}
-                placeholder="e.g., 10"
-              />
-              <span>min</span>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <button 
+                type="button" 
+                onClick={() => setBreakMinutes(0)}
+                className={breakMinutes === 0 ? 'secondary' : 'outline'}
+              >
+                No break
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setBreakMinutes(5)}
+                className={breakMinutes === 5 ? 'secondary' : 'outline'}
+              >
+                5 min
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setBreakMinutes(10)}
+                className={breakMinutes === 10 ? 'secondary' : 'outline'}
+              >
+                10 min
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setBreakMinutes(15)}
+                className={breakMinutes === 15 ? 'secondary' : 'outline'}
+              >
+                15 min
+              </button>
             </div>
           </label>
         </div>
