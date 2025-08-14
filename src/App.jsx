@@ -219,7 +219,7 @@ function App() {
       ) : (
         <article style={{ marginTop: '0.75rem' }}>
           <header>
-            <strong>Practice Session</strong>
+            <strong>Practice Session: {formatMinutes(totalMinutes)}</strong>
           </header>
           {includeLanding && landingMinutes > 0 && (
             <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>
