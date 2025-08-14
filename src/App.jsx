@@ -22,7 +22,7 @@ function App() {
   const [totalMinutes, setTotalMinutes] = useState(60)
   const [rounds, setRounds] = useState(2)
   const [breakMinutes, setBreakMinutes] = useState(0)
-  const [landingMinutes, setLandingMinutes] = useState(5)
+  const [landingMinutes, setLandingMinutes] = useState(3)
   const [includeLanding, setIncludeLanding] = useState(true)
   const [startTime, setStartTime] = useState(new Date())
 
@@ -61,7 +61,7 @@ function App() {
     else if ((breakMinutes || 0) + landingTime > (totalMinutes || 0)) message = 'Break time and landing time cannot exceed total session time'
     return {
       availableMinutes: available,
-      perRoundMinutes: Math.round(perRound),
+      perRoundMinutes: Math.floor(perRound),
       error: message,
     }
   }, [totalMinutes, rounds, breakMinutes, landingMinutes, includeLanding])
@@ -146,10 +146,10 @@ function App() {
 
         </div>
         
-        <div className="grid" style={{ marginTop: '1rem' }}>
+        <div className="grid" style={{ marginTop: '1rem' , marginBottom: '0'}}>
           <div>
             <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Break</div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0' }}>
               <button 
                 type="button" 
                 onClick={() => setBreakMinutes(0)}
@@ -182,7 +182,7 @@ function App() {
           </div>
         </div>
         
-        <div className="grid" style={{ marginTop: '1rem' }}>
+        <div className="grid" style={{ marginTop: '0rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input
