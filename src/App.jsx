@@ -25,6 +25,7 @@ function App() {
   const [landingMinutes, setLandingMinutes] = useState(3)
   const [includeLanding, setIncludeLanding] = useState(true)
   const [startTime, setStartTime] = useState(new Date())
+  const [timingMode, setTimingMode] = useState('during') // 'during' or 'until'
 
   // Convert total minutes to hours and minutes for display
   const hours = Math.floor(totalMinutes / 60)
@@ -49,6 +50,38 @@ function App() {
     setTotalMinutes(newHours * 60 + newMinutes)
   }
 
+  // Calculate rounded end times for "until" mode
+  const getRoundedEndTimes = () => {
+    const now = new Date()
+    const times = []
+    
+    // 60 minutes from now, rounded to nearest 30 minutes
+    const time60 = new Date(now.getTime() + 60 * 60000)
+    const rounded60 = new Date(time60)
+    rounded60.setMinutes(Math.round(time60.getMinutes() / 30) * 30)
+    rounded60.setSeconds(0)
+    rounded60.setMilliseconds(0)
+    times.push({ label: '60 min', time: rounded60, minutes: Math.round((rounded60.getTime() - now.getTime()) / 60000) })
+    
+    // 90 minutes from now, rounded to nearest 30 minutes
+    const time90 = new Date(now.getTime() + 90 * 60000)
+    const rounded90 = new Date(time90)
+    rounded90.setMinutes(Math.round(time90.getMinutes() / 30) * 30)
+    rounded90.setSeconds(0)
+    rounded90.setMilliseconds(0)
+    times.push({ label: '90 min', time: rounded90, minutes: Math.round((rounded90.getTime() - now.getTime()) / 60000) })
+    
+    // 2 hours from now, rounded to nearest hour
+    const time120 = new Date(now.getTime() + 120 * 60000)
+    const rounded120 = new Date(time120)
+    rounded120.setMinutes(Math.round(time120.getMinutes() / 30) * 30)
+    rounded120.setSeconds(0)
+    rounded120.setMilliseconds(0)
+    times.push({ label: '2 hours', time: rounded120, minutes: Math.round((rounded120.getTime() - now.getTime()) / 60000) })
+    
+    return times
+  }
+
   const { availableMinutes, perRoundMinutes, error } = useMemo(() => {
     const landingTime = includeLanding ? (landingMinutes || 0) : 0
     const available = Number.isFinite(totalMinutes) && Number.isFinite(breakMinutes)
@@ -71,55 +104,98 @@ function App() {
       <form>
         <div className="grid">
           <div>
-            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Total session</div>
+            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span>Total session</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 'normal' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="timingMode"
+                    value="during"
+                    checked={timingMode === 'during'}
+                    onChange={(e) => setTimingMode(e.target.value)}
+                    style={{ margin: 0 }}
+                  />
+                  <span>during</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="timingMode"
+                    value="until"
+                    checked={timingMode === 'until'}
+                    onChange={(e) => setTimingMode(e.target.value)}
+                    style={{ margin: 0 }}
+                  />
+                  <span>until</span>
+                </label>
+              </div>
+            </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <button 
-                type="button" 
-                onClick={() => handlePreset(60)}
-                className={totalMinutes === 60 ? 'secondary' : 'outline'}
-              >
-                60 min
-              </button>
-              <button 
-                type="button" 
-                onClick={() => handlePreset(90)}
-                className={totalMinutes === 90 ? 'secondary' : 'outline'}
-              >
-                90 min
-              </button>
-              <button 
-                type="button" 
-                onClick={() => handlePreset(120)}
-                className={totalMinutes === 120 ? 'secondary' : 'outline'}
-              >
-                2 hours
-              </button>
+              {timingMode === 'during' ? (
+                <>
+                  <button 
+                    type="button" 
+                    onClick={() => handlePreset(60)}
+                    className={totalMinutes === 60 ? 'secondary' : 'outline'}
+                  >
+                    60 min
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => handlePreset(90)}
+                    className={totalMinutes === 90 ? 'secondary' : 'outline'}
+                  >
+                    90 min
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => handlePreset(120)}
+                    className={totalMinutes === 120 ? 'secondary' : 'outline'}
+                  >
+                    2 hours
+                  </button>
+                </>
+              ) : (
+                getRoundedEndTimes().map((option, index) => (
+                  <button 
+                    key={index}
+                    type="button" 
+                    onClick={() => setTotalMinutes(option.minutes)}
+                    className={totalMinutes === option.minutes ? 'secondary' : 'outline'}
+                  >
+                    {formatTime(option.time)}
+                  </button>
+                ))
+              )}
             </div>
-            <div className="time-inputs">
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step={1}
-                value={hours}
-                onChange={handleHoursChange}
-                placeholder="0"
-                style={{ width: '80px' }}
-              />
-              <span>hr</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step={1}
-                max={59}
-                value={minutes}
-                onChange={handleMinutesChange}
-                placeholder="0"
-                style={{ width: '80px' }}
-              />
-              <span>min</span>
-            </div>
+            {timingMode === 'during' && (
+              <div className="time-inputs">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  value={hours}
+                  onChange={handleHoursChange}
+                  placeholder="0"
+                  style={{ width: '80px' }}
+                />
+                <span>hr</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  max={59}
+                  value={minutes}
+                  onChange={handleMinutesChange}
+                  placeholder="0"
+                  style={{ width: '80px' }}
+                />
+                <span>min</span>
+              </div>
+            )}
           </div>
         </div>
         
