@@ -144,6 +144,9 @@ function App() {
             </div>
           </label>
 
+        </div>
+        
+        <div className="grid" style={{ marginTop: '1rem' }}>
           <label>
             Break
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -201,7 +204,7 @@ function App() {
             <strong>Practice Session</strong>
           </header>
           {includeLanding && landingMinutes > 0 && (
-            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', opacity: 0.8 }}>
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>
               {formatMinutes(landingMinutes)} to land and prepare
             </p>
           )}
@@ -209,27 +212,37 @@ function App() {
             {rounds} round{rounds > 1 ? 's' : ''} of {formatMinutes(perRoundMinutes)}
           </p>
           {breakMinutes > 0 && (
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '1rem' }}>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '1.25rem' }}>
               {formatMinutes(breakMinutes)} break
             </p>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0 0 0', justifyContent: 'center' }}>
-            <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+          <footer style={{ 
+            marginTop: '1rem', 
+            paddingTop: '0.75rem', 
+            borderTop: '1px solid rgba(0,0,0,0.1)',
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            justifyContent: 'center',
+            fontSize: '0.9rem',
+            opacity: 0.8
+          }}>
+            <span>
               Start {formatTime(startTime)}, end {formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}
             </span>
             <button 
               type="button" 
               onClick={() => setStartTime(new Date())}
               style={{ 
-                fontSize: '1rem', 
-                padding: '0.2rem',
+                fontSize: '0.8rem', 
+                padding: '0.15rem',
                 opacity: 0.6,
                 background: 'transparent',
                 border: '1px solid rgba(0,0,0,0.15)',
                 borderRadius: '3px',
                 cursor: 'pointer',
-                width: '20px',
-                height: '20px',
+                width: '18px',
+                height: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -239,7 +252,7 @@ function App() {
             >
               ↻
             </button>
-          </div>
+          </footer>
         </article>
       )}
     </section>
