@@ -71,7 +71,7 @@ function App() {
       <form>
         <div className="grid">
           <div>
-            Total session
+            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Total session</div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <button 
                 type="button" 
@@ -125,7 +125,7 @@ function App() {
         
         <div className="grid" style={{ marginTop: '1rem' }}>
           <div>
-            Rounds
+            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Rounds</div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <button 
                 type="button" 
@@ -148,7 +148,7 @@ function App() {
         
         <div className="grid" style={{ marginTop: '1rem' }}>
           <div>
-            Break
+            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Break</div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <button 
                 type="button" 
@@ -246,25 +246,27 @@ function App() {
             opacity: 0.8
           }}>
             <span>
-              Start {formatTime(startTime)}, end {formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}
+              Start <strong>{formatTime(startTime)}</strong>, end <strong>{formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}</strong>
             </span>
             <button 
               type="button" 
               onClick={() => setStartTime(new Date())}
               style={{ 
-                fontSize: '0.8rem', 
-                padding: '0.15rem',
-                opacity: 0.6,
+                fontSize: '1.1rem', 
+                padding: '0.35rem',
+                opacity: 0.8,
                 background: 'transparent',
-                border: '1px solid rgba(0,0,0,0.15)',
-                borderRadius: '3px',
+                border: '1px solid var(--pico-primary)',
+                borderRadius: '4px',
                 cursor: 'pointer',
-                width: '18px',
-                height: '18px',
+                width: '28px',
+                height: '28px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'rgba(0,0,0,0.6)'
+                color: 'var(--pico-primary)',
+                lineHeight: '1',
+                alignSelf: 'baseline'
               }}
               title="Update start time"
             >

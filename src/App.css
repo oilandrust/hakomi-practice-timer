@@ -38,6 +38,17 @@ html {
   margin-top: 0.5rem !important;
 }
 
+/* Align form headings to the left */
+.grid > label {
+  text-align: left !important;
+}
+
+/* Override root center alignment for form labels */
+.grid > label > span,
+.grid > label > div {
+  text-align: left !important;
+}
+
 /* Reduce spacing in the result section */
 article {
   margin: 0.25rem 0 !important;
