@@ -56,26 +56,27 @@ article {
   text-align: center;
 }
 
-/* Custom button styles for better contrast */
+/* Custom button styles for better contrast in both light and dark themes */
 button.secondary {
-  background-color: #0066cc !important;
-  color: white !important;
-  border-color: #0066cc !important;
+  background-color: var(--pico-primary) !important;
+  color: var(--pico-primary-inverse) !important;
+  border-color: var(--pico-primary) !important;
 }
 
 button.secondary:hover {
-  background-color: #0052a3 !important;
-  border-color: #0052a3 !important;
+  background-color: var(--pico-primary-hover) !important;
+  border-color: var(--pico-primary-hover) !important;
 }
 
 button.outline {
   background-color: transparent !important;
-  color: #0066cc !important;
-  border-color: #0066cc !important;
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
 }
 
 button.outline:hover {
-  background-color: #f0f8ff !important;
+  background-color: var(--pico-primary-focus) !important;
+  color: var(--pico-primary-inverse) !important;
 }
 
 /* Custom checkbox styling */
