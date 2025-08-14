@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import './App.css'
 
 function formatMinutes(totalMinutes) {
@@ -26,6 +26,7 @@ function App() {
   const [includeLanding, setIncludeLanding] = useState(true)
   const [startTime, setStartTime] = useState(new Date())
   const [timingMode, setTimingMode] = useState('during') // 'during' or 'until'
+  const [targetEndTime, setTargetEndTime] = useState(null) // Store target end time for "until" mode
 
   // Convert total minutes to hours and minutes for display
   const hours = Math.floor(totalMinutes / 60)
@@ -82,6 +83,20 @@ function App() {
     return times
   }
 
+  // Auto-select first available end time when switching to "until" mode
+  useEffect(() => {
+    if (timingMode === 'until') {
+      const endTimes = getRoundedEndTimes()
+      if (endTimes.length > 0) {
+        const firstOption = endTimes[0]
+        setTotalMinutes(firstOption.minutes)
+        setTargetEndTime(firstOption.time)
+      }
+    } else {
+      setTargetEndTime(null)
+    }
+  }, [timingMode])
+
   const { availableMinutes, perRoundMinutes, error } = useMemo(() => {
     const landingTime = includeLanding ? (landingMinutes || 0) : 0
     const available = Number.isFinite(totalMinutes) && Number.isFinite(breakMinutes)
@@ -98,6 +113,19 @@ function App() {
       error: message,
     }
   }, [totalMinutes, rounds, breakMinutes, landingMinutes, includeLanding])
+
+  // Adjust start time when parameters change in "until" mode
+  useEffect(() => {
+    if (timingMode === 'until' && targetEndTime) {
+      // Calculate how much time the session will actually take
+      const landingTime = includeLanding ? (landingMinutes || 0) : 0
+      const actualSessionTime = (breakMinutes || 0) + landingTime + (availableMinutes || 0)
+      
+      // Calculate new start time to end at target time
+      const newStartTime = new Date(targetEndTime.getTime() - actualSessionTime * 60000)
+      setStartTime(newStartTime)
+    }
+  }, [timingMode, targetEndTime, breakMinutes, landingMinutes, includeLanding, availableMinutes])
 
   return (
     <section>
@@ -161,7 +189,10 @@ function App() {
                   <button 
                     key={index}
                     type="button" 
-                    onClick={() => setTotalMinutes(option.minutes)}
+                    onClick={() => {
+                      setTotalMinutes(option.minutes)
+                      setTargetEndTime(option.time)
+                    }}
                     className={totalMinutes === option.minutes ? 'secondary' : 'outline'}
                   >
                     {formatTime(option.time)}
@@ -169,6 +200,90 @@ function App() {
                 ))
               )}
             </div>
+            {timingMode === 'until' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <input
+                  type="time"
+                  value={targetEndTime ? targetEndTime.toTimeString().slice(0, 5) : ''}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      const [hours, minutes] = e.target.value.split(':').map(Number)
+                      const newEndTime = new Date()
+                      newEndTime.setHours(hours, minutes, 0, 0)
+                      setTargetEndTime(newEndTime)
+                      const now = new Date()
+                      const newTotalMinutes = Math.max(0, Math.round((newEndTime.getTime() - now.getTime()) / 60000))
+                      setTotalMinutes(newTotalMinutes)
+                    }
+                  }}
+                  style={{ 
+                    width: '120px',
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (targetEndTime) {
+                        const newEndTime = new Date(targetEndTime.getTime() + 5 * 60000)
+                        setTargetEndTime(newEndTime)
+                        const now = new Date()
+                        const newTotalMinutes = Math.max(0, Math.round((newEndTime.getTime() - now.getTime()) / 60000))
+                        setTotalMinutes(newTotalMinutes)
+                      }
+                    }}
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      padding: '0',
+                      fontSize: '16px',
+                      lineHeight: '1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      background: 'var(--pico-primary)',
+                      color: 'var(--pico-primary-inverse)',
+                      border: 'none',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (targetEndTime) {
+                        const newEndTime = new Date(targetEndTime.getTime() - 5 * 60000)
+                        setTargetEndTime(newEndTime)
+                        const now = new Date()
+                        const newTotalMinutes = Math.max(0, Math.round((newEndTime.getTime() - now.getTime()) / 60000))
+                        setTotalMinutes(newTotalMinutes)
+                      }
+                    }}
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      padding: '0',
+                      fontSize: '16px',
+                      lineHeight: '1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      background: 'var(--pico-primary)',
+                      color: 'var(--pico-primary-inverse)',
+                      border: 'none',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    −
+                  </button>
+                </div>
+              </div>
+            )}
             {timingMode === 'during' && (
               <div className="time-inputs">
                 <input
@@ -193,9 +308,53 @@ function App() {
                   placeholder="0"
                   style={{ width: '80px' }}
                 />
-                <span>min</span>
-              </div>
-            )}
+                                  <span>min</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', marginLeft: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setTotalMinutes(Math.max(0, totalMinutes + 5))}
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        padding: '0',
+                        fontSize: '16px',
+                        lineHeight: '1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        background: 'var(--pico-primary)',
+                        color: 'var(--pico-primary-inverse)',
+                        border: 'none',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTotalMinutes(Math.max(0, totalMinutes - 5))}
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        padding: '0',
+                        fontSize: '16px',
+                        lineHeight: '1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        background: 'var(--pico-primary)',
+                        color: 'var(--pico-primary-inverse)',
+                        border: 'none',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      −
+                    </button>
+                  </div>
+                </div>
+              )}
           </div>
         </div>
         
@@ -297,17 +456,17 @@ function App() {
           <header>
             <strong>Practice Session: {formatMinutes(totalMinutes)}</strong>
           </header>
-          {includeLanding && landingMinutes > 0 && (
-            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>
-              {formatMinutes(landingMinutes)} to land and prepare
-            </p>
-          )}
           <p style={{ fontSize: '1.25rem', margin: 0 }}>
-            {rounds} round{rounds > 1 ? 's' : ''} of {formatMinutes(perRoundMinutes)}
+            {rounds} round{rounds > 1 ? 's' : ''} of <b>{formatMinutes(perRoundMinutes)}</b>
           </p>
           {breakMinutes > 0 && (
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '1.25rem' }}>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '1.1rem' }}>
               {formatMinutes(breakMinutes)} break
+            </p>
+          )}
+          {includeLanding && landingMinutes > 0 && (
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
+              {formatMinutes(landingMinutes)} to land and prepare
             </p>
           )}
           <footer style={{ 
@@ -356,3 +515,4 @@ function App() {
 }
 
 export default App
+
