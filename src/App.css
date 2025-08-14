@@ -40,7 +40,7 @@ html {
 
 /* Reduce spacing in the result section */
 article {
-  margin-top: 0.5rem !important;
+  margin: 0.25rem 0 !important;
 }
 
 /* Reduce spacing around the time display */
@@ -82,5 +82,7 @@ button.outline:hover {
 input[type="checkbox"] {
   accent-color: #0066cc !important;
 }
+
+/* Removed header compacting; margin is controlled on the article element */
 
 
