@@ -70,7 +70,7 @@ function App() {
     <section>
       <form>
         <div className="grid">
-          <label>
+          <div>
             Total session
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <button 
@@ -120,11 +120,11 @@ function App() {
               />
               <span>min</span>
             </div>
-          </label>
+          </div>
         </div>
         
         <div className="grid" style={{ marginTop: '1rem' }}>
-          <label>
+          <div>
             Rounds
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <button 
@@ -142,12 +142,12 @@ function App() {
                 3 rounds
               </button>
             </div>
-          </label>
+          </div>
 
         </div>
         
         <div className="grid" style={{ marginTop: '1rem' }}>
-          <label>
+          <div>
             Break
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <button 
@@ -179,11 +179,11 @@ function App() {
                 15 min
               </button>
             </div>
-          </label>
+          </div>
         </div>
         
         <div className="grid" style={{ marginTop: '1rem' }}>
-          <label>
+          <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input
                 type="checkbox"
@@ -208,7 +208,7 @@ function App() {
               />
               <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>min to land and prepare</span>
             </div>
-          </label>
+          </div>
         </div>
       </form>
 
