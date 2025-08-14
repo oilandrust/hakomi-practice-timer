@@ -63,15 +63,25 @@ button.secondary {
   border-color: var(--pico-primary) !important;
 }
 
-button.secondary:hover,
-button.secondary:focus {
-  background-color: var(--pico-primary-hover) !important;
-  border-color: var(--pico-primary-hover) !important;
-}
-
 button.outline {
   background-color: transparent !important;
   color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Fix button hover areas and prevent layout issues */
+button.secondary,
+button.outline {
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Ensure buttons don't interfere with each other's hover states */
+button.secondary:hover,
+button.secondary:focus {
+  background-color: var(--pico-primary) !important;
+  color: var(--pico-primary-inverse) !important;
   border-color: var(--pico-primary) !important;
 }
 
@@ -79,19 +89,6 @@ button.outline:hover,
 button.outline:focus {
   background-color: var(--pico-primary-focus) !important;
   color: var(--pico-primary-inverse) !important;
-}
-
-/* Ensure proper button state management */
-button.secondary:not(:hover):not(:focus) {
-  background-color: var(--pico-primary) !important;
-  color: var(--pico-primary-inverse) !important;
-  border-color: var(--pico-primary) !important;
-}
-
-button.outline:not(:hover):not(:focus) {
-  background-color: transparent !important;
-  color: var(--pico-primary) !important;
-  border-color: var(--pico-primary) !important;
 }
 
 /* Custom checkbox styling */
