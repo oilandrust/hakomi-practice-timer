@@ -140,11 +140,65 @@ function Timer() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
-      padding: '2rem',
       textAlign: 'center'
     }}>
+      {/* Navbar with quit button */}
+      <div style={{
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '1rem',
+        background: 'var(--pico-background-color)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid var(--pico-muted-color)',
+        zIndex: 1000
+      }}>
+        <button
+          onClick={() => navigate('/practice')}
+          style={{
+            padding: '0.5rem',
+            fontSize: '1.2rem',
+            background: 'transparent',
+            color: 'var(--pico-muted-color)',
+            border: '2px solid var(--pico-muted-color)',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            width: '2.5rem',
+            height: '2.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            lineHeight: '1',
+            transition: 'all 0.2s ease'
+          }}
+          title="Quit Session"
+          onMouseEnter={(e) => {
+            e.target.style.background = 'var(--pico-muted-color)'
+            e.target.style.color = 'white'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent'
+            e.target.style.color = 'var(--pico-muted-color)'
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Main content */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '2rem',
+        paddingTop: '5rem',
+        textAlign: 'center'
+      }}>
       {/* Timer display */}
       <div style={{ 
         fontSize: '6rem', 
@@ -159,26 +213,28 @@ function Timer() {
 
 
 
-      {/* Main action button */}
-      <button
-        onClick={handleMainButtonClick}
-        style={{
-          padding: '1.5rem 3rem',
-          fontSize: '1.3rem',
-          fontWeight: 'bold',
-          background: currentPhase === 'finished' ? 'var(--pico-primary)' : getPhaseColor(),
-          color: 'white',
-          border: 'none',
-          borderRadius: '10px',
-          cursor: 'pointer',
-          marginBottom: '1rem',
-          minWidth: '250px'
-        }}
-      >
-        {getButtonText()}
-      </button>
+      {/* Main action button - only show when timer is not running */}
+      {!timerRunning && (
+        <button
+          onClick={handleMainButtonClick}
+          style={{
+            padding: '1.5rem 3rem',
+            fontSize: '1.3rem',
+            fontWeight: 'bold',
+            background: currentPhase === 'finished' ? 'var(--pico-primary)' : getPhaseColor(),
+            color: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            marginBottom: '1rem',
+            minWidth: '250px'
+          }}
+        >
+          {getButtonText()}
+        </button>
+      )}
 
-      {/* Control buttons */}
+      {/* Pause and Finish buttons - only show when timer is running */}
       <div style={{ 
         display: 'flex', 
         gap: '1rem',
@@ -189,52 +245,52 @@ function Timer() {
           <button
             onClick={togglePause}
             style={{
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
+              padding: '1.5rem 3rem',
+              fontSize: '1.3rem',
+              fontWeight: 'bold',
               background: 'transparent',
               color: getPhaseColor(),
               border: `2px solid ${getPhaseColor()}`,
-              borderRadius: '6px',
-              cursor: 'pointer'
+              borderRadius: '10px',
+              cursor: 'pointer',
+              minWidth: '150px'
             }}
           >
             {timerPaused ? 'Resume' : 'Pause'}
           </button>
         )}
 
-        {/* Reset button (only show when timer is not running) */}
-        {!timerRunning && currentPhase !== 'finished' && (
+        {/* Finish button (only show when timer is running) */}
+        {timerRunning && currentPhase !== 'finished' && (
           <button
-            onClick={resetTimer}
+            onClick={() => {
+              setTimerRunning(false)
+              if (currentPhase === 'practice' && feedbackTime > 0) {
+                setCurrentPhase('feedback')
+                setTimerSeconds(feedbackTime * 60)
+              } else {
+                setCurrentPhase('finished')
+              }
+            }}
             style={{
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
+              padding: '1.5rem 3rem',
+              fontSize: '1.3rem',
+              fontWeight: 'bold',
               background: 'transparent',
               color: 'var(--pico-del-color, #b91c1c)',
               border: '2px solid var(--pico-del-color, #b91c1c)',
-              borderRadius: '6px',
-              cursor: 'pointer'
+              borderRadius: '10px',
+              cursor: 'pointer',
+              minWidth: '150px'
             }}
           >
-            Reset
+            Finish
           </button>
         )}
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate('/practice')}
-          style={{
-            padding: '0.75rem 1.5rem',
-            fontSize: '1rem',
-            background: 'transparent',
-            color: 'var(--pico-muted-color)',
-            border: '2px solid var(--pico-muted-color)',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}
-        >
-          Back
-        </button>
+
+
+      </div>
       </div>
     </div>
   )
