@@ -111,7 +111,7 @@ function PracticeSession() {
     isDraggingRef.current = true
     
     // Add touch move and touch end to document when dragging starts
-    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchmove', handleTouchMove)
     document.addEventListener('touchend', handleTouchEnd)
   }
 
@@ -124,7 +124,6 @@ function PracticeSession() {
 
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current) return
-    e.preventDefault()
     
     const container = document.querySelector('.time-breakdown-container')
     if (!container) return
