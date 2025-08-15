@@ -233,25 +233,25 @@ function PracticeSession() {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}
         >
-          {/* Practice Time Section */}
+                    {/* Practice Time Section */}
           <div style={{
             position: 'absolute',
             left: '0',
             top: '0',
             width: `${(practiceTime / totalRoundTime) * 100}%`,
             height: '100%',
-            background: 'var(--pico-primary)',
+            background: 'var(--pico-card-background-color, #fff)',
             transition: 'width 0.1s ease'
           }} />
           
-                    {/* Feedback Time Section */}
+          {/* Feedback Time Section */}
           <div style={{
             position: 'absolute',
             right: '0',
             top: '0',
             width: `${(feedbackTime / totalRoundTime) * 100}%`,
             height: '100%',
-            background: 'var(--pico-secondary, #666)',
+            background: 'var(--pico-muted-border-color, #e9ecef)',
             transition: 'width 0.1s ease'
           }} />
           
@@ -262,7 +262,7 @@ function PracticeSession() {
             top: '0',
             width: '6px',
             height: '100%',
-            background: 'var(--pico-background-color, #fff)',
+            background: '#cccccc',
             cursor: 'ew-resize',
             boxShadow: '0 0 8px rgba(0,0,0,0.4)',
             zIndex: 10,
@@ -271,40 +271,41 @@ function PracticeSession() {
           onMouseDown={handleDelimiterMouseDown}
           onTouchStart={handleDelimiterTouchStart}
           />
-        </div>
-        
-        {/* Time Labels */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          fontSize: '0.9rem',
-          marginTop: '0.5rem',
-          opacity: 0.7
-        }}>
-
-        </div>
-      </div>
-
-      {/* Time breakdown */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        marginBottom: '2rem',
-        padding: '1rem',
-        background: 'var(--pico-card-background-color, #fff)',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Practice</div>
-          <div style={{ fontSize: '1.5rem', color: 'var(--pico-primary)' }}>
-            {formatMinutes(practiceTime)}
-          </div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Feedback</div>
-          <div style={{ fontSize: '1.5rem', color: 'var(--pico-primary)' }}>
-            {formatMinutes(feedbackTime)}
+          
+          {/* Overlaid Time Breakdown Text */}
+          <div style={{ 
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0 1rem',
+            zIndex: 5,
+            pointerEvents: 'none'
+          }}>
+            <div style={{ 
+              textAlign: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold'
+            }}>
+              <div style={{ fontSize: '1.2rem' }}>Practice</div>
+              <div style={{ fontSize: '1.1rem', color: 'var(--pico-primary)' }}>
+                {formatMinutes(practiceTime)}
+              </div>
+            </div>
+            <div style={{ 
+              textAlign: 'center',
+              color: '#ffffff',
+              fontWeight: 'bold'
+            }}>
+              <div style={{ fontSize: '1.2rem' }}>Feedback</div>
+              <div style={{ fontSize: '1.1rem', color: 'var(--pico-primary)' }}>
+                {formatMinutes(feedbackTime)}
+              </div>
+            </div>
           </div>
         </div>
       </div>
