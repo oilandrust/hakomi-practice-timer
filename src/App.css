@@ -92,7 +92,7 @@ button.outline:hover {
 
 /* Custom checkbox styling */
 input[type="checkbox"] {
-  accent-color: #0066cc !important;
+  accent-color: #ff8c00 !important;
 }
 
 /* Removed header compacting; margin is controlled on the article element */
