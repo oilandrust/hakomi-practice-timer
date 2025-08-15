@@ -8,12 +8,43 @@
     <link rel="icon" href="./favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ff8c00" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
     <title>Hakomi Practice Timer</title>
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2.1.1/css/pico.min.css" />
     <style>
       :root { --pico-font-size: 100%; }
       body { padding: 0.5rem; }
       main { max-width: 720px; margin: 0 auto; }
+      
+      /* Mobile screen wake prevention */
+      @media (max-width: 768px) {
+        body {
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+        
+        /* Prevent zoom on input focus */
+        input, textarea, select {
+          font-size: 16px !important;
+        }
+        
+        /* Keep screen active during timer */
+        .timer-active {
+          animation: keep-awake 1s infinite;
+        }
+        
+        @keyframes keep-awake {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.999; }
+        }
+      }
     </style>
   </head>
   <body>

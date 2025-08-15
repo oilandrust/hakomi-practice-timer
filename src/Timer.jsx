@@ -52,6 +52,63 @@ function Timer() {
     }
   }, [timerRunning, timerPaused, timerSeconds, currentPhase, feedbackTime])
 
+  // Keep screen awake when timer is running
+  useEffect(() => {
+    let wakeLock = null
+    let userActivityTimer = null
+
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen')
+        }
+      } catch (err) {
+        console.log('Wake Lock not supported or failed:', err)
+      }
+    }
+
+    const releaseWakeLock = () => {
+      if (wakeLock) {
+        wakeLock.release()
+        wakeLock = null
+      }
+    }
+
+    const keepScreenAwake = () => {
+      // Fallback: simulate user activity to prevent screen sleep
+      if (userActivityTimer) {
+        clearInterval(userActivityTimer)
+      }
+      
+      userActivityTimer = setInterval(() => {
+        // Trigger a small user activity event to keep screen awake
+        const event = new Event('touchstart', { bubbles: true })
+        document.dispatchEvent(event)
+      }, 30000) // Every 30 seconds
+    }
+
+    const stopKeepingScreenAwake = () => {
+      if (userActivityTimer) {
+        clearInterval(userActivityTimer)
+        userActivityTimer = null
+      }
+    }
+
+    if (timerRunning && !timerPaused) {
+      requestWakeLock()
+      keepScreenAwake()
+    } else {
+      releaseWakeLock()
+      stopKeepingScreenAwake()
+    }
+
+    // Cleanup on unmount
+    return () => {
+      releaseWakeLock()
+      stopKeepingScreenAwake()
+    }
+  }, [timerRunning, timerPaused])
+
   // Start practice timer
   const startPractice = () => {
     setTimerSeconds(practiceTime * 60)
@@ -136,13 +193,16 @@ function Timer() {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center'
-    }}>
+    <div 
+      className={timerRunning && !timerPaused ? 'timer-active' : ''}
+      style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center'
+      }}
+    >
       {/* Navbar with quit button */}
       <div style={{
         position: 'fixed',
