@@ -1,0 +1,236 @@
+import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+
+function formatMinutes(totalMinutes) {
+  const rounded = Math.max(0, Math.round(totalMinutes))
+  const hours = Math.floor(rounded / 60)
+  const minutes = rounded % 60
+  if (hours === 0) return `${minutes} min`
+  if (minutes === 0) return `${hours} hr${hours > 1 ? 's' : ''}`
+  return `${hours} hr${hours > 1 ? 's' : ''} ${minutes} min`
+}
+
+function formatTime(date) {
+  return date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  })
+}
+
+function formatTimer(seconds) {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+function PracticeSession() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  
+  // Get session data from location state or localStorage
+  const getSessionData = () => {
+    if (location.state) {
+      // Store in localStorage for persistence
+      localStorage.setItem('hakomiSessionData', JSON.stringify(location.state))
+      return location.state
+    }
+    // Try to get from localStorage
+    const stored = localStorage.getItem('hakomiSessionData')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Convert startTime back to Date object
+      if (parsed.startTime) {
+        parsed.startTime = new Date(parsed.startTime)
+      }
+      return parsed
+    }
+    return null
+  }
+  
+  const sessionData = getSessionData()
+  const [feedbackTime, setFeedbackTime] = useState(0)
+
+  if (!sessionData) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>No session data found</h2>
+        <button onClick={() => navigate('/')} style={{ marginTop: '1rem' }}>
+          Back to Planning
+        </button>
+      </div>
+    )
+  }
+
+  // Calculate practice time based on feedback time (after null check)
+  const practiceTime = sessionData.perRoundMinutes - feedbackTime
+  const totalRoundTime = sessionData.perRoundMinutes
+
+
+
+  if (!sessionData) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>No session data found</h2>
+        <button onClick={() => navigate('/')} style={{ marginTop: '1rem' }}>
+          Back to Planning
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      padding: '1rem',
+      maxWidth: '600px',
+      margin: '0 auto',
+      position: 'relative'
+    }}>
+      {/* Navigation bar */}
+      <div style={{
+        background: 'var(--pico-background-color, #fff)',
+        borderBottom: '1px solid var(--pico-muted-border-color, #e9ecef)',
+        padding: '1rem',
+        marginBottom: '1.5rem',
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: '1.5rem',
+            color: 'var(--pico-muted-color)',
+            cursor: 'pointer',
+            padding: '0.5rem',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(0,0,0,0.1)'
+            e.target.style.color = 'var(--pico-primary)'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent'
+            e.target.style.color = 'var(--pico-muted-color)'
+          }}
+          title="Back to Planning"
+        >
+          ←
+        </button>
+      </div>
+
+      {/* Header with session summary */}
+      <div style={{ 
+        background: 'var(--pico-card-background-color, #fff)',
+        padding: '1.5rem',
+        borderRadius: '8px',
+        marginBottom: '2rem',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <h2 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>
+          Practice Session
+        </h2>
+        <div style={{ display: 'grid', gap: '0.5rem', fontSize: '1.1rem' }}>
+          <div><strong>Duration:</strong> {formatMinutes(sessionData.totalMinutes)}</div>
+          <div><strong>End Time:</strong> {formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))}</div>
+          <div><strong>Round Duration:</strong> {formatMinutes(sessionData.perRoundMinutes)}</div>
+          {sessionData.breakMinutes > 0 && (
+            <div><strong>Break:</strong> {formatMinutes(sessionData.breakMinutes)}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Feedback time slider */}
+      <div style={{ marginBottom: '2rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+          Feedback Time: {formatMinutes(feedbackTime)}
+        </label>
+        <input
+          type="range"
+          min="0"
+          max={totalRoundTime}
+          value={feedbackTime}
+          onChange={(e) => setFeedbackTime(Number(e.target.value))}
+          style={{ width: '100%', height: '8px' }}
+        />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          fontSize: '0.9rem',
+          marginTop: '0.5rem',
+          opacity: 0.7
+        }}>
+          <span>No feedback</span>
+          <span>Max feedback</span>
+        </div>
+      </div>
+
+      {/* Time breakdown */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        marginBottom: '2rem',
+        padding: '1rem',
+        background: 'var(--pico-card-background-color, #fff)',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Practice</div>
+          <div style={{ fontSize: '1.5rem', color: 'var(--pico-primary)' }}>
+            {formatMinutes(practiceTime)}
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Feedback</div>
+          <div style={{ fontSize: '1.5rem', color: 'var(--pico-primary)' }}>
+            {formatMinutes(feedbackTime)}
+          </div>
+        </div>
+      </div>
+
+      {/* Start Round button */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center',
+        marginBottom: '2rem'
+      }}>
+        <button
+          onClick={() => {
+            navigate('/timer', {
+              state: {
+                practiceTime,
+                feedbackTime
+              }
+            })
+          }}
+          style={{
+            padding: '1.5rem 3rem',
+            fontSize: '1.3rem',
+            fontWeight: 'bold',
+            background: 'var(--pico-primary)',
+            color: 'var(--pico-primary-inverse)',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            minWidth: '250px'
+          }}
+        >
+          Start Round
+        </button>
+      </div>
+
+
+    </div>
+  )
+}
+
+export default PracticeSession

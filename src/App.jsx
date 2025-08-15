@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './App.css'
 
 function formatMinutes(totalMinutes) {
@@ -19,6 +20,7 @@ function formatTime(date) {
 }
 
 function App() {
+  const navigate = useNavigate()
   const [totalMinutes, setTotalMinutes] = useState(60)
   const [rounds, setRounds] = useState(2)
   const [breakMinutes, setBreakMinutes] = useState(0)
@@ -510,6 +512,40 @@ function App() {
           </footer>
         </article>
       )}
+
+      {/* Let's go button */}
+      <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+        <button
+          type="button"
+          onClick={() => {
+            navigate('/practice', {
+              state: {
+                totalMinutes,
+                rounds,
+                breakMinutes,
+                landingMinutes,
+                includeLanding,
+                startTime,
+                perRoundMinutes,
+                availableMinutes
+              }
+            })
+          }}
+          style={{
+            width: '100%',
+            padding: '1rem',
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            background: 'var(--pico-primary)',
+            color: 'var(--pico-primary-inverse)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          Let's go!
+        </button>
+      </div>
     </section>
   )
 }
