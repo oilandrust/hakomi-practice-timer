@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 function formatMinutes(totalMinutes) {
@@ -50,7 +50,7 @@ function PracticeSession() {
   
   const sessionData = getSessionData()
   const [feedbackTime, setFeedbackTime] = useState(7) // Default to 7 minutes
-  const [isDragging, setIsDragging] = useState(false)
+  const isDraggingRef = useRef(false)
 
   if (!sessionData) {
     return (
@@ -72,53 +72,68 @@ function PracticeSession() {
   // Delimiter drag handlers
   const handleDelimiterMouseDown = (e) => {
     e.stopPropagation()
-    setIsDragging(true)
+    isDraggingRef.current = true
     
-    const handleMouseMove = (e) => {
-      if (!isDragging) return
-      const container = document.querySelector('.time-breakdown-container')
-      if (!container) return
-      
-      const rect = container.getBoundingClientRect()
-      const mouseX = e.clientX - rect.left
-      const newFeedbackTime = Math.round((mouseX / rect.width) * totalRoundTime)
-      setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
-    }
-    
-    const handleMouseUp = () => {
-      setIsDragging(false)
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-    
+    // Add mouse move and mouse up to document when dragging starts
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
   }
 
+  const handleDelimiterMouseUp = () => {
+    isDraggingRef.current = false
+    // Remove document event listeners
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current) return
+    
+    const container = document.querySelector('.time-breakdown-container')
+    if (!container) return
+    
+    const rect = container.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    const newFeedbackTime = Math.round(((rect.width - mouseX) / rect.width) * totalRoundTime)
+    
+    setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
+  }
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false
+    // Remove document event listeners
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }
+
   const handleDelimiterTouchStart = (e) => {
     e.stopPropagation()
-    setIsDragging(true)
+    isDraggingRef.current = true
     
-    const handleTouchMove = (e) => {
-      if (!isDragging) return
-      e.preventDefault()
-      const container = document.querySelector('.time-breakdown-container')
-      if (!container) return
-      
-      const rect = container.getBoundingClientRect()
-      const touchX = e.touches[0].clientX - rect.left
-      const newFeedbackTime = Math.round((touchX / rect.width) * totalRoundTime)
-      setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
-    }
-    
-    const handleTouchEnd = () => {
-      setIsDragging(false)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
-    }
-    
+    // Add touch move and touch end to document when dragging starts
     document.addEventListener('touchmove', handleTouchMove, { passive: false })
     document.addEventListener('touchend', handleTouchEnd)
+  }
+
+  const handleDelimiterTouchEnd = () => {
+    isDraggingRef.current = false
+    // Remove document event listeners
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+  }
+
+  const handleTouchMove = (e) => {
+    if (!isDraggingRef.current) return
+    e.preventDefault()
+    
+    const container = document.querySelector('.time-breakdown-container')
+    if (!container) return
+    
+    const rect = container.getBoundingClientRect()
+    const touchX = e.touches[0].clientX - rect.left
+    const newFeedbackTime = Math.round(((rect.width - touchX) / rect.width) * totalRoundTime)
+    
+    setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
   }
 
 
@@ -205,14 +220,6 @@ function PracticeSession() {
 
       {/* Interactive Time Breakdown */}
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ 
-          fontSize: '1.1rem', 
-          fontWeight: 'bold', 
-          marginBottom: '1rem',
-          textAlign: 'center'
-        }}>
-          Drag the white bar to adjust time allocation
-        </div>
         
         {/* Visual Time Breakdown */}
         <div 
@@ -274,8 +281,7 @@ function PracticeSession() {
           marginTop: '0.5rem',
           opacity: 0.7
         }}>
-          <span>Practice: {formatMinutes(practiceTime)}</span>
-          <span>Feedback: {formatMinutes(feedbackTime)}</span>
+
         </div>
       </div>
 
