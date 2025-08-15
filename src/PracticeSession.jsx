@@ -49,7 +49,8 @@ function PracticeSession() {
   }
   
   const sessionData = getSessionData()
-  const [feedbackTime, setFeedbackTime] = useState(0)
+  const [feedbackTime, setFeedbackTime] = useState(7) // Default to 7 minutes
+  const [isDragging, setIsDragging] = useState(false)
 
   if (!sessionData) {
     return (
@@ -65,6 +66,60 @@ function PracticeSession() {
   // Calculate practice time based on feedback time (after null check)
   const practiceTime = sessionData.perRoundMinutes - feedbackTime
   const totalRoundTime = sessionData.perRoundMinutes
+
+
+
+  // Delimiter drag handlers
+  const handleDelimiterMouseDown = (e) => {
+    e.stopPropagation()
+    setIsDragging(true)
+    
+    const handleMouseMove = (e) => {
+      if (!isDragging) return
+      const container = document.querySelector('.time-breakdown-container')
+      if (!container) return
+      
+      const rect = container.getBoundingClientRect()
+      const mouseX = e.clientX - rect.left
+      const newFeedbackTime = Math.round((mouseX / rect.width) * totalRoundTime)
+      setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
+    }
+    
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleDelimiterTouchStart = (e) => {
+    e.stopPropagation()
+    setIsDragging(true)
+    
+    const handleTouchMove = (e) => {
+      if (!isDragging) return
+      e.preventDefault()
+      const container = document.querySelector('.time-breakdown-container')
+      if (!container) return
+      
+      const rect = container.getBoundingClientRect()
+      const touchX = e.touches[0].clientX - rect.left
+      const newFeedbackTime = Math.round((touchX / rect.width) * totalRoundTime)
+      setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
+    }
+    
+    const handleTouchEnd = () => {
+      setIsDragging(false)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+    
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd)
+  }
 
 
 
@@ -148,19 +203,70 @@ function PracticeSession() {
         </div>
       </div>
 
-      {/* Feedback time slider */}
+      {/* Interactive Time Breakdown */}
       <div style={{ marginBottom: '2rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-          Feedback Time: {formatMinutes(feedbackTime)}
-        </label>
-        <input
-          type="range"
-          min="0"
-          max={totalRoundTime}
-          value={feedbackTime}
-          onChange={(e) => setFeedbackTime(Number(e.target.value))}
-          style={{ width: '100%', height: '8px' }}
-        />
+        <div style={{ 
+          fontSize: '1.1rem', 
+          fontWeight: 'bold', 
+          marginBottom: '1rem',
+          textAlign: 'center'
+        }}>
+          Drag the white bar to adjust time allocation
+        </div>
+        
+        {/* Visual Time Breakdown */}
+        <div 
+          className="time-breakdown-container"
+          style={{
+            position: 'relative',
+            height: '80px',
+            background: 'var(--pico-card-background-color, #fff)',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
+          {/* Practice Time Section */}
+          <div style={{
+            position: 'absolute',
+            left: '0',
+            top: '0',
+            width: `${(practiceTime / totalRoundTime) * 100}%`,
+            height: '100%',
+            background: 'var(--pico-primary)',
+            transition: 'width 0.1s ease'
+          }} />
+          
+                    {/* Feedback Time Section */}
+          <div style={{
+            position: 'absolute',
+            right: '0',
+            top: '0',
+            width: `${(feedbackTime / totalRoundTime) * 100}%`,
+            height: '100%',
+            background: 'var(--pico-secondary, #666)',
+            transition: 'width 0.1s ease'
+          }} />
+          
+          {/* Draggable Delimiter */}
+          <div style={{
+            position: 'absolute',
+            left: `${(practiceTime / totalRoundTime) * 100}%`,
+            top: '0',
+            width: '6px',
+            height: '100%',
+            background: 'var(--pico-background-color, #fff)',
+            cursor: 'ew-resize',
+            boxShadow: '0 0 8px rgba(0,0,0,0.4)',
+            zIndex: 10,
+            borderRadius: '3px'
+          }}
+          onMouseDown={handleDelimiterMouseDown}
+          onTouchStart={handleDelimiterTouchStart}
+          />
+        </div>
+        
+        {/* Time Labels */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -168,8 +274,8 @@ function PracticeSession() {
           marginTop: '0.5rem',
           opacity: 0.7
         }}>
-          <span>No feedback</span>
-          <span>Max feedback</span>
+          <span>Practice: {formatMinutes(practiceTime)}</span>
+          <span>Feedback: {formatMinutes(feedbackTime)}</span>
         </div>
       </div>
 
