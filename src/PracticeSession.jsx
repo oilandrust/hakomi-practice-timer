@@ -261,7 +261,23 @@ function PracticeSession() {
             transition: 'width 0.1s ease'
           }} />
           
-          {/* Draggable Delimiter */}
+          {/* Draggable Delimiter - Invisible large touch area */}
+          <div style={{
+            position: 'absolute',
+            left: `${(practiceTime / totalRoundTime) * 100}%`,
+            top: '0',
+            width: '40px',
+            height: '100%',
+            background: 'transparent',
+            cursor: 'ew-resize',
+            zIndex: 10,
+            transform: 'translateX(-50%)'
+          }}
+          onMouseDown={handleDelimiterMouseDown}
+          onTouchStart={handleDelimiterTouchStart}
+          />
+          
+          {/* Visible thin delimiter */}
           <div style={{
             position: 'absolute',
             left: `${(practiceTime / totalRoundTime) * 100}%`,
@@ -269,14 +285,12 @@ function PracticeSession() {
             width: '6px',
             height: '100%',
             background: '#cccccc',
-            cursor: 'ew-resize',
             boxShadow: '0 0 8px rgba(0,0,0,0.4)',
-            zIndex: 10,
-            borderRadius: '3px'
-          }}
-          onMouseDown={handleDelimiterMouseDown}
-          onTouchStart={handleDelimiterTouchStart}
-          />
+            zIndex: 11,
+            borderRadius: '3px',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none'
+          }} />
           
           {/* Overlaid Time Breakdown Text */}
           <div style={{ 
