@@ -135,6 +135,13 @@ function PracticeSession() {
     setFeedbackTime(Math.max(0, Math.min(totalRoundTime, newFeedbackTime)))
   }
 
+  const handleTouchEnd = () => {
+    isDraggingRef.current = false
+    // Remove document event listeners
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+  }
+
 
 
   if (!sessionData) {
