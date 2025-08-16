@@ -50,6 +50,7 @@ function PracticeSession() {
   
   const sessionData = getSessionData()
   const [feedbackTime, setFeedbackTime] = useState(7) // Default to 7 minutes
+  const [selectedRound, setSelectedRound] = useState(null)
   const isDraggingRef = useRef(false)
 
   if (!sessionData) {
@@ -211,124 +212,221 @@ function PracticeSession() {
         marginBottom: '2rem',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
-        <h2 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>
-          Practice Session
-        </h2>
-        <div style={{ display: 'grid', gap: '0.5rem', fontSize: '1.1rem' }}>
-          <div><strong>Duration:</strong> {formatMinutes(sessionData.totalMinutes)}</div>
-          <div><strong>End Time:</strong> {formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))}</div>
-          <div><strong>Round Duration:</strong> {formatMinutes(sessionData.perRoundMinutes)}</div>
-          {sessionData.breakMinutes > 0 && (
-            <div><strong>Break:</strong> {formatMinutes(sessionData.breakMinutes)}</div>
-          )}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-around', 
+          alignItems: 'center',
+          fontSize: '1.2rem',
+          fontWeight: 'bold'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--pico-primary)'
+          }}>
+            <span style={{ fontSize: '1.5rem' }}>⏱️</span>
+            {formatMinutes(sessionData.totalMinutes)}
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--pico-primary)'
+          }}>
+            <span style={{ fontSize: '1.5rem' }}>🕐</span>
+            {formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))}
+          </div>
         </div>
       </div>
 
-      {/* Interactive Time Breakdown */}
-      <div style={{ marginBottom: '2rem' }}>
+      {/* Round and Break Selection */}
+      <div style={{ 
+        background: 'var(--pico-card-background-color, #fff)',
+        padding: '1.5rem',
+        borderRadius: '8px',
+        marginBottom: '2rem',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        {/* Round Buttons Row */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '1rem',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap'
+        }}>
+          {Array.from({ length: sessionData.rounds }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedRound(index + 1)}
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                border: 'none',
+                background: selectedRound === index + 1 ? 'var(--pico-primary)' : 'var(--pico-muted-border-color)',
+                color: selectedRound === index + 1 ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column'
+              }}
+            >
+              <div>Round</div>
+              <div>{index + 1}</div>
+            </button>
+          ))}
+          {sessionData.breakMinutes > 0 && (
+            <button
+              onClick={() => setSelectedRound('break')}
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                border: 'none',
+                background: selectedRound === 'break' ? 'var(--pico-success)' : 'var(--pico-success-hover)',
+                color: selectedRound === 'break' ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column'
+              }}
+            >
+              <div>Break</div>
+            </button>
+          )}
+        </div>
         
-        {/* Visual Time Breakdown */}
-        <div 
-          className="time-breakdown-container"
-          style={{
-            position: 'relative',
-            height: '80px',
-            background: 'var(--pico-card-background-color, #fff)',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-        >
-                    {/* Practice Time Section */}
-          <div style={{
-            position: 'absolute',
-            left: '0',
-            top: '0',
-            width: `${(practiceTime / totalRoundTime) * 100}%`,
-            height: '100%',
-            background: 'var(--pico-card-background-color, #fff)',
-            transition: 'width 0.1s ease'
-          }} />
+        {/* Selected Duration Display */}
+        <div style={{ 
+          textAlign: 'center',
+          fontSize: '1.3rem',
+          fontWeight: 'bold',
+          color: 'var(--pico-primary)'
+        }}>
+          {selectedRound === 'break' 
+            ? `Break: ${formatMinutes(sessionData.breakMinutes)}`
+            : selectedRound 
+              ? `Round ${selectedRound}: ${formatMinutes(sessionData.perRoundMinutes)}`
+              : 'Select a round or break'
+          }
+        </div>
+      </div>
+
+      {/* Interactive Time Breakdown - Only show when a round is selected */}
+      {selectedRound && selectedRound !== 'break' && (
+        <div style={{ marginBottom: '2rem' }}>
           
-          {/* Feedback Time Section */}
-          <div style={{
-            position: 'absolute',
-            right: '0',
-            top: '0',
-            width: `${(feedbackTime / totalRoundTime) * 100}%`,
-            height: '100%',
-            background: 'var(--pico-muted-border-color, #e9ecef)',
-            transition: 'width 0.1s ease'
-          }} />
-          
-          {/* Draggable Delimiter - Invisible large touch area */}
-          <div style={{
-            position: 'absolute',
-            left: `${(practiceTime / totalRoundTime) * 100}%`,
-            top: '0',
-            width: '40px',
-            height: '100%',
-            background: 'transparent',
-            cursor: 'ew-resize',
-            zIndex: 10,
-            transform: 'translateX(-50%)'
-          }}
-          onMouseDown={handleDelimiterMouseDown}
-          onTouchStart={handleDelimiterTouchStart}
-          />
-          
-          {/* Visible thin delimiter */}
-          <div style={{
-            position: 'absolute',
-            left: `${(practiceTime / totalRoundTime) * 100}%`,
-            top: '0',
-            width: '6px',
-            height: '100%',
-            background: '#cccccc',
-            boxShadow: '0 0 8px rgba(0,0,0,0.4)',
-            zIndex: 11,
-            borderRadius: '3px',
-            transform: 'translateX(-50%)',
-            pointerEvents: 'none'
-          }} />
-          
-          {/* Overlaid Time Breakdown Text */}
-          <div style={{ 
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '0 1rem',
-            zIndex: 5,
-            pointerEvents: 'none'
-          }}>
+          {/* Visual Time Breakdown */}
+          <div 
+            className="time-breakdown-container"
+            style={{
+              position: 'relative',
+              height: '80px',
+              background: 'var(--pico-card-background-color, #fff)',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+                      {/* Practice Time Section */}
+            <div style={{
+              position: 'absolute',
+              left: '0',
+              top: '0',
+              width: `${(practiceTime / totalRoundTime) * 100}%`,
+              height: '100%',
+              background: 'var(--pico-card-background-color, #fff)',
+              transition: 'width 0.1s ease'
+            }} />
+            
+            {/* Feedback Time Section */}
+            <div style={{
+              position: 'absolute',
+              right: '0',
+              top: '0',
+              width: `${(feedbackTime / totalRoundTime) * 100}%`,
+              height: '100%',
+              background: 'var(--pico-muted-border-color, #e9ecef)',
+              transition: 'width 0.1s ease'
+            }} />
+            
+            {/* Draggable Delimiter - Invisible large touch area */}
+            <div style={{
+              position: 'absolute',
+              left: `${(practiceTime / totalRoundTime) * 100}%`,
+              top: '0',
+              width: '40px',
+              height: '100%',
+              background: 'transparent',
+              cursor: 'ew-resize',
+              zIndex: 10,
+              transform: 'translateX(-50%)'
+            }}
+            onMouseDown={handleDelimiterMouseDown}
+            onTouchStart={handleDelimiterTouchStart}
+            />
+            
+            {/* Visible thin delimiter */}
+            <div style={{
+              position: 'absolute',
+              left: `${(practiceTime / totalRoundTime) * 100}%`,
+              top: '0',
+              width: '6px',
+              height: '100%',
+              background: '#cccccc',
+              zIndex: 11,
+              transform: 'translateX(-50%)',
+              pointerEvents: 'none'
+            }} />
+            
+            {/* Overlaid Time Breakdown Text */}
             <div style={{ 
-              textAlign: 'center',
-              color: '#ffffff',
-              fontWeight: 'bold'
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              right: '0',
+              bottom: '0',
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0 1rem',
+              zIndex: 5,
+              pointerEvents: 'none'
             }}>
-              <div style={{ fontSize: '1.2rem' }}>Practice</div>
-              <div style={{ fontSize: '1.1rem', color: 'var(--pico-primary)' }}>
-                {formatMinutes(practiceTime)}
+              <div style={{ 
+                textAlign: 'center',
+                color: '#ffffff',
+                fontWeight: 'bold'
+              }}>
+                <div style={{ fontSize: '1.2rem' }}>Practice</div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--pico-primary)' }}>
+                  {formatMinutes(practiceTime)}
+                </div>
               </div>
-            </div>
-            <div style={{ 
-              textAlign: 'center',
-              color: '#ffffff',
-              fontWeight: 'bold'
-            }}>
-              <div style={{ fontSize: '1.2rem' }}>Feedback</div>
-              <div style={{ fontSize: '1.1rem', color: 'var(--pico-primary)' }}>
-                {formatMinutes(feedbackTime)}
+              <div style={{ 
+                textAlign: 'center',
+                color: '#ffffff',
+                fontWeight: 'bold'
+              }}>
+                <div style={{ fontSize: '1.2rem' }}>Feedback</div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--pico-primary)' }}>
+                  {formatMinutes(feedbackTime)}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Start Round button */}
       <div style={{ 
@@ -340,8 +438,9 @@ function PracticeSession() {
           onClick={() => {
             navigate('/timer', {
               state: {
-                practiceTime,
-                feedbackTime
+                practiceTime: selectedRound === 'break' ? 0 : practiceTime,
+                feedbackTime: selectedRound === 'break' ? 0 : feedbackTime,
+                isBreak: selectedRound === 'break'
               }
             })
           }}
@@ -349,7 +448,7 @@ function PracticeSession() {
             padding: '1.5rem 3rem',
             fontSize: '1.3rem',
             fontWeight: 'bold',
-            background: 'var(--pico-primary)',
+            background: selectedRound === 'break' ? 'var(--pico-success)' : 'var(--pico-primary)',
             color: 'var(--pico-primary-inverse)',
             border: 'none',
             borderRadius: '10px',
@@ -357,7 +456,7 @@ function PracticeSession() {
             minWidth: '250px'
           }}
         >
-          Start Round
+          {selectedRound === 'break' ? 'Start Break' : 'Start Round'}
         </button>
       </div>
 
