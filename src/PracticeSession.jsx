@@ -54,6 +54,7 @@ function PracticeSession() {
   const [currentTime, setCurrentTime] = useState(Date.now())
   const [completedRounds, setCompletedRounds] = useState(new Set())
   const [breakCompleted, setBreakCompleted] = useState(false)
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false)
   const isDraggingRef = useRef(false)
 
   // Load completion state from localStorage
@@ -228,13 +229,16 @@ function PracticeSession() {
       }}>
         <button
           onClick={() => {
-            // If all rounds are done, clear the data when going back
+            // If all rounds and break are done, no need for confirmation
             if (selectedRound === null) {
               localStorage.removeItem('hakomiSessionData')
               localStorage.removeItem('hakomiCompletedRounds')
               localStorage.removeItem('hakomiBreakCompleted')
+              navigate('/')
+            } else {
+              // Show confirmation only if there are still rounds/break to complete
+              setShowExitConfirmation(true)
             }
-            navigate('/')
           }}
           style={{
             background: 'transparent',
@@ -262,6 +266,74 @@ function PracticeSession() {
           ←
         </button>
       </div>
+
+      {/* Exit Confirmation Popup */}
+      {showExitConfirmation && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--pico-card-background-color, #fff)',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+          }}>
+            <h3 style={{ margin: '0 0 1.5rem 0' }}>Finish Session?</h3>
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => setShowExitConfirmation(false)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '1rem',
+                  background: 'var(--pico-muted-border-color)',
+                  color: 'var(--pico-color)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Clear all session data
+                  localStorage.removeItem('hakomiSessionData')
+                  localStorage.removeItem('hakomiCompletedRounds')
+                  localStorage.removeItem('hakomiBreakCompleted')
+                  setShowExitConfirmation(false)
+                  navigate('/')
+                }}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '1rem',
+                  background: 'var(--pico-del-color, #b91c1c)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header with session summary */}
       <div style={{ 
