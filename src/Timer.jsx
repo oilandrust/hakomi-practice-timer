@@ -19,7 +19,7 @@ function formatMinutes(totalMinutes) {
 function Timer() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { practiceTime, feedbackTime, roundNumber, isBreak } = location.state || {}
+  const { practiceTime, feedbackTime, roundNumber, isBreak, adjustedTimePerRound } = location.state || {}
 
   const [timerRunning, setTimerRunning] = useState(false)
   const [timerPaused, setTimerPaused] = useState(false)
@@ -32,7 +32,7 @@ function Timer() {
         return parsed.breakMinutes * 60
       }
     }
-    return practiceTime * 60
+    return adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60
   }
 
   const [timerSeconds, setTimerSeconds] = useState(getBreakDuration()) // Initialize with appropriate time
@@ -157,7 +157,7 @@ function Timer() {
         setCurrentPhase('break')
       }
     } else {
-      setTimerSeconds(practiceTime * 60)
+      setTimerSeconds(adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60)
       setCurrentPhase('practice')
     }
     setTimerRunning(true)
@@ -217,7 +217,10 @@ function Timer() {
       }
       return 'Start Break'
     }
-    if (currentPhase === 'practice' && !timerRunning) return `Start ${formatMinutes(practiceTime)} Practice`
+    if (currentPhase === 'practice' && !timerRunning) {
+      const timeToShow = adjustedTimePerRound || practiceTime
+      return `Start ${formatMinutes(timeToShow)} Practice`
+    }
     if (currentPhase === 'feedback' && !timerRunning) return `Start ${formatMinutes(feedbackTime)} Feedback`
     if (currentPhase === 'finished') return 'Finish Round'
     return timerPaused ? 'Resume' : 'Pause'

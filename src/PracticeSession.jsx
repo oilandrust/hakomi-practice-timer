@@ -69,11 +69,11 @@ function PracticeSession() {
     }
   }, [])
 
-  // Update current time every minute to refresh the remaining time display
+  // Update current time every five seconds to refresh the remaining time display
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now())
-    }, 60000) // Update every minute (60000ms)
+    }, 5000) // Update every five seconds (5000ms)
 
     return () => clearInterval(interval)
   }, [])
@@ -107,9 +107,17 @@ function PracticeSession() {
     )
   }
 
-  // Calculate practice time based on feedback time (after null check)
-  const practiceTime = sessionData.perRoundMinutes - feedbackTime
-  const totalRoundTime = sessionData.perRoundMinutes
+  // Calculate remaining time and adjust time per round dynamically
+  const remainingTime = Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000))
+  const remainingBreakTime = sessionData.breakMinutes > 0 && !breakCompleted ? sessionData.breakMinutes : 0
+  const remainingRounds = Array.from({ length: sessionData.rounds }, (_, i) => i + 1).filter(round => !completedRounds.has(round))
+  const adjustedTimePerRound = remainingRounds.length > 0 
+    ? Math.max(1, Math.floor((remainingTime - remainingBreakTime) / remainingRounds.length))
+    : sessionData.perRoundMinutes
+
+  // Calculate practice time based on adjusted time per round
+  const practiceTime = adjustedTimePerRound - feedbackTime
+  const totalRoundTime = adjustedTimePerRound
 
 
 
@@ -405,7 +413,7 @@ function PracticeSession() {
         }}>
           {selectedRound === 'break' 
             ? formatTimer(sessionData.breakMinutes * 60)
-            : formatTimer(sessionData.perRoundMinutes * 60)
+            : formatTimer(adjustedTimePerRound * 60)
           }
         </div>
       )}
@@ -537,7 +545,8 @@ function PracticeSession() {
                   practiceTime: selectedRound === 'break' ? 0 : practiceTime,
                   feedbackTime: selectedRound === 'break' ? 0 : feedbackTime,
                   isBreak: selectedRound === 'break',
-                  roundNumber: selectedRound
+                  roundNumber: selectedRound,
+                  adjustedTimePerRound: selectedRound === 'break' ? 0 : adjustedTimePerRound
                 }
               })
             }
