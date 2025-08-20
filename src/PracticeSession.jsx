@@ -50,8 +50,51 @@ function PracticeSession() {
   
   const sessionData = getSessionData()
   const [feedbackTime, setFeedbackTime] = useState(7) // Default to 7 minutes
-  const [selectedRound, setSelectedRound] = useState(null)
+  const [selectedRound, setSelectedRound] = useState(1)
+  const [currentTime, setCurrentTime] = useState(Date.now())
+  const [completedRounds, setCompletedRounds] = useState(new Set())
+  const [breakCompleted, setBreakCompleted] = useState(false)
   const isDraggingRef = useRef(false)
+
+  // Load completion state from localStorage
+  useEffect(() => {
+    const storedCompletedRounds = localStorage.getItem('hakomiCompletedRounds')
+    const storedBreakCompleted = localStorage.getItem('hakomiBreakCompleted')
+    
+    if (storedCompletedRounds) {
+      setCompletedRounds(new Set(JSON.parse(storedCompletedRounds)))
+    }
+    if (storedBreakCompleted) {
+      setBreakCompleted(JSON.parse(storedBreakCompleted))
+    }
+  }, [])
+
+  // Update current time every minute to refresh the remaining time display
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 60000) // Update every minute (60000ms)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Auto-select the next available round when entering the screen
+  useEffect(() => {
+    // Find the first incomplete round
+    for (let i = 1; i <= sessionData.rounds; i++) {
+      if (!completedRounds.has(i)) {
+        setSelectedRound(i)
+        return
+      }
+    }
+    
+    // If all rounds are done, check if break is available and not completed
+    if (sessionData.breakMinutes > 0 && !breakCompleted) {
+      setSelectedRound('break')
+    } else {
+      setSelectedRound(null) // All done
+    }
+  }, [completedRounds, breakCompleted, sessionData.rounds, sessionData.breakMinutes])
 
   if (!sessionData) {
     return (
@@ -176,7 +219,15 @@ function PracticeSession() {
         alignItems: 'center'
       }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            // If all rounds are done, clear the data when going back
+            if (selectedRound === null) {
+              localStorage.removeItem('hakomiSessionData')
+              localStorage.removeItem('hakomiCompletedRounds')
+              localStorage.removeItem('hakomiBreakCompleted')
+            }
+            navigate('/')
+          }}
           style={{
             background: 'transparent',
             border: 'none',
@@ -226,7 +277,7 @@ function PracticeSession() {
             color: 'var(--pico-primary)'
           }}>
             <span style={{ fontSize: '1.5rem' }}>⏱️</span>
-            {formatMinutes(sessionData.totalMinutes)}
+            {formatMinutes(Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000)))}
           </div>
           <div style={{ 
             display: 'flex', 
@@ -256,71 +307,108 @@ function PracticeSession() {
           marginBottom: '1.5rem',
           flexWrap: 'wrap'
         }}>
-          {Array.from({ length: sessionData.rounds }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedRound(index + 1)}
-              style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                border: 'none',
-                background: selectedRound === index + 1 ? 'var(--pico-primary)' : 'var(--pico-muted-border-color)',
-                color: selectedRound === index + 1 ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column'
-              }}
-            >
-              <div>Round</div>
-              <div>{index + 1}</div>
-            </button>
-          ))}
+          {Array.from({ length: sessionData.rounds }, (_, index) => {
+            const roundNumber = index + 1
+            const isCompleted = completedRounds.has(roundNumber)
+            const isSelected = selectedRound === roundNumber
+            
+            return (
+              <button
+                key={index}
+                onClick={() => !isCompleted && setSelectedRound(roundNumber)}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: isCompleted 
+                    ? 'var(--pico-success)' 
+                    : isSelected 
+                      ? 'var(--pico-primary)' 
+                      : 'var(--pico-muted-border-color)',
+                  color: isCompleted || isSelected ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  cursor: isCompleted ? 'default' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  opacity: isCompleted ? 0.7 : 1
+                }}
+              >
+                <div>Round</div>
+                <div>{roundNumber}</div>
+                {isCompleted && <div style={{ fontSize: '0.7rem', marginTop: '2px' }}>✓</div>}
+              </button>
+            )
+          })}
           {sessionData.breakMinutes > 0 && (
             <button
-              onClick={() => setSelectedRound('break')}
+              onClick={() => !breakCompleted && setSelectedRound('break')}
               style={{
                 width: '60px',
                 height: '60px',
                 borderRadius: '50%',
                 border: 'none',
-                background: selectedRound === 'break' ? 'var(--pico-success)' : 'var(--pico-success-hover)',
-                color: selectedRound === 'break' ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                background: breakCompleted 
+                  ? 'var(--pico-success)' 
+                  : selectedRound === 'break' 
+                    ? 'var(--pico-success)' 
+                    : 'var(--pico-success-hover)',
+                color: selectedRound === 'break' || breakCompleted ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
                 fontSize: '0.9rem',
                 fontWeight: 'bold',
-                cursor: 'pointer',
+                cursor: breakCompleted ? 'default' : 'pointer',
                 transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                opacity: breakCompleted ? 0.7 : 1
               }}
             >
               <div>Break</div>
+              {breakCompleted && <div style={{ fontSize: '0.7rem', marginTop: '2px' }}>✓</div>}
             </button>
           )}
         </div>
-        
-        {/* Selected Duration Display */}
+      </div>
+
+      {/* All Done Display */}
+      {selectedRound === null && (
         <div style={{ 
           textAlign: 'center',
-          fontSize: '1.3rem',
+          fontSize: '2rem',
           fontWeight: 'bold',
-          color: 'var(--pico-primary)'
+          color: 'var(--pico-success)',
+          marginBottom: '2rem',
+          padding: '2rem',
+          background: 'var(--pico-card-background-color, #fff)',
+          borderRadius: '8px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          🎉 All Done! 🎉
+        </div>
+      )}
+
+      {/* Selected Duration Display - Below the round buttons container */}
+      {selectedRound && (
+        <div style={{ 
+          textAlign: 'center',
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          fontFamily: 'monospace',
+          marginBottom: '2rem',
+          color: selectedRound === 'break' ? 'var(--pico-success)' : 'var(--pico-primary)'
         }}>
           {selectedRound === 'break' 
-            ? `Break: ${formatMinutes(sessionData.breakMinutes)}`
-            : selectedRound 
-              ? `Round ${selectedRound}: ${formatMinutes(sessionData.perRoundMinutes)}`
-              : 'Select a round or break'
+            ? formatTimer(sessionData.breakMinutes * 60)
+            : formatTimer(sessionData.perRoundMinutes * 60)
           }
         </div>
-      </div>
+      )}
 
       {/* Interactive Time Breakdown - Only show when a round is selected */}
       {selectedRound && selectedRound !== 'break' && (
@@ -436,19 +524,33 @@ function PracticeSession() {
       }}>
         <button
           onClick={() => {
-            navigate('/timer', {
-              state: {
-                practiceTime: selectedRound === 'break' ? 0 : practiceTime,
-                feedbackTime: selectedRound === 'break' ? 0 : feedbackTime,
-                isBreak: selectedRound === 'break'
-              }
-            })
+            if (selectedRound === null) {
+              // All done - clear data and go back to main screen
+              localStorage.removeItem('hakomiSessionData')
+              localStorage.removeItem('hakomiCompletedRounds')
+              localStorage.removeItem('hakomiBreakCompleted')
+              navigate('/')
+            } else {
+              // Start round or break
+              navigate('/timer', {
+                state: {
+                  practiceTime: selectedRound === 'break' ? 0 : practiceTime,
+                  feedbackTime: selectedRound === 'break' ? 0 : feedbackTime,
+                  isBreak: selectedRound === 'break',
+                  roundNumber: selectedRound
+                }
+              })
+            }
           }}
           style={{
             padding: '1.5rem 3rem',
             fontSize: '1.3rem',
             fontWeight: 'bold',
-            background: selectedRound === 'break' ? 'var(--pico-success)' : 'var(--pico-primary)',
+            background: selectedRound === null 
+              ? 'var(--pico-del-color, #b91c1c)' 
+              : selectedRound === 'break' 
+                ? 'var(--pico-success)' 
+                : 'var(--pico-primary)',
             color: 'var(--pico-primary-inverse)',
             border: 'none',
             borderRadius: '10px',
@@ -456,7 +558,12 @@ function PracticeSession() {
             minWidth: '250px'
           }}
         >
-          {selectedRound === 'break' ? 'Start Break' : 'Start Round'}
+          {selectedRound === null 
+            ? 'Finish' 
+            : selectedRound === 'break' 
+              ? 'Start Break' 
+              : 'Start Round'
+          }
         </button>
       </div>
 

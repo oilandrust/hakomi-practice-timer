@@ -19,12 +19,24 @@ function formatMinutes(totalMinutes) {
 function Timer() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { practiceTime, feedbackTime } = location.state || {}
+  const { practiceTime, feedbackTime, roundNumber, isBreak } = location.state || {}
 
   const [timerRunning, setTimerRunning] = useState(false)
   const [timerPaused, setTimerPaused] = useState(false)
-  const [timerSeconds, setTimerSeconds] = useState(practiceTime * 60) // Initialize with practice time
-  const [currentPhase, setCurrentPhase] = useState('practice') // 'practice', 'feedback', 'finished'
+  // Get break duration from localStorage if this is a break session
+  const getBreakDuration = () => {
+    if (isBreak) {
+      const sessionData = localStorage.getItem('hakomiSessionData')
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData)
+        return parsed.breakMinutes * 60
+      }
+    }
+    return practiceTime * 60
+  }
+
+  const [timerSeconds, setTimerSeconds] = useState(getBreakDuration()) // Initialize with appropriate time
+  const [currentPhase, setCurrentPhase] = useState(isBreak ? 'break' : 'practice') // 'practice', 'feedback', 'break', 'finished'
   const [pausedSeconds, setPausedSeconds] = useState(0)
 
   // Timer effect
@@ -38,6 +50,8 @@ function Timer() {
             if (currentPhase === 'practice' && feedbackTime > 0) {
               setCurrentPhase('feedback')
               setTimerSeconds(feedbackTime * 60)
+            } else if (currentPhase === 'break') {
+              setCurrentPhase('finished')
             } else {
               setCurrentPhase('finished')
             }
@@ -109,10 +123,43 @@ function Timer() {
     }
   }, [timerRunning, timerPaused])
 
+  // Save completion state to localStorage when timer finishes
+  useEffect(() => {
+    if (currentPhase === 'finished' && roundNumber) {
+      if (roundNumber === 'break') {
+        localStorage.setItem('hakomiBreakCompleted', 'true')
+      } else {
+        const storedCompletedRounds = localStorage.getItem('hakomiCompletedRounds')
+        const completedRounds = storedCompletedRounds ? JSON.parse(storedCompletedRounds) : []
+        if (!completedRounds.includes(roundNumber)) {
+          completedRounds.push(roundNumber)
+          localStorage.setItem('hakomiCompletedRounds', JSON.stringify(completedRounds))
+        }
+      }
+    }
+  }, [currentPhase, roundNumber])
+
+  // Auto-start break timer when entering break session
+  useEffect(() => {
+    if (isBreak && !timerRunning && currentPhase === 'break') {
+      startPractice() // This will start the break timer
+    }
+  }, [isBreak, timerRunning, currentPhase])
+
   // Start practice timer
   const startPractice = () => {
-    setTimerSeconds(practiceTime * 60)
-    setCurrentPhase('practice')
+    if (isBreak) {
+      // For break sessions, start with break duration
+      const sessionData = localStorage.getItem('hakomiSessionData')
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData)
+        setTimerSeconds(parsed.breakMinutes * 60)
+        setCurrentPhase('break')
+      }
+    } else {
+      setTimerSeconds(practiceTime * 60)
+      setCurrentPhase('practice')
+    }
     setTimerRunning(true)
     setTimerPaused(false)
   }
@@ -150,7 +197,7 @@ function Timer() {
     navigate('/practice')
   }
 
-  if (!practiceTime) {
+  if (!practiceTime && !isBreak) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>No timer data found</h2>
@@ -162,6 +209,14 @@ function Timer() {
   }
 
   const getButtonText = () => {
+    if (currentPhase === 'break' && !timerRunning) {
+      const sessionData = localStorage.getItem('hakomiSessionData')
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData)
+        return `Start ${formatMinutes(parsed.breakMinutes)} Break`
+      }
+      return 'Start Break'
+    }
     if (currentPhase === 'practice' && !timerRunning) return `Start ${formatMinutes(practiceTime)} Practice`
     if (currentPhase === 'feedback' && !timerRunning) return `Start ${formatMinutes(feedbackTime)} Feedback`
     if (currentPhase === 'finished') return 'Finish Round'
@@ -169,7 +224,7 @@ function Timer() {
   }
 
   const handleMainButtonClick = () => {
-    if (currentPhase === 'practice' && !timerRunning) {
+    if ((currentPhase === 'practice' || currentPhase === 'break') && !timerRunning) {
       startPractice()
     } else if (currentPhase === 'feedback' && !timerRunning) {
       startFeedback()
@@ -183,6 +238,7 @@ function Timer() {
   const getPhaseColor = () => {
     if (currentPhase === 'practice') return 'var(--pico-primary)'
     if (currentPhase === 'feedback') return 'var(--pico-secondary)'
+    if (currentPhase === 'break') return 'var(--pico-success)'
     return 'var(--pico-muted-color)'
   }
 
