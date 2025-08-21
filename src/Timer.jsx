@@ -43,13 +43,13 @@ function Timer() {
 
   const [timerSeconds, setTimerSeconds] = useState(getBreakDuration())
 
-  // Timer effect with real time checking
+  // Timer effect - check for completion and update display
   useEffect(() => {
     let interval = null
     if (timerRunning && !timerPaused) {
       interval = setInterval(() => {
+        // Always calculate based on real elapsed time
         if (startTime && totalDuration > 0) {
-          // Calculate remaining time based on real elapsed time
           const elapsed = Math.floor((Date.now() - startTime) / 1000)
           const remaining = totalDuration - elapsed
           
@@ -71,33 +71,73 @@ function Timer() {
           } else {
             setTimerSeconds(remaining)
           }
-        } else {
-          // Fallback to traditional countdown
-          setTimerSeconds(prev => {
-            if (prev <= 1) {
-              setTimerRunning(false)
-              setTimerSeconds(0)
-              
-              // Play completion sound
-              playCompletionSound()
-              
-              if (currentPhase === 'practice' && feedbackTime > 0) {
-                setCurrentPhase('feedback')
-                setTotalDuration(feedbackTime * 60)
-                setStartTime(Date.now())
-                setTimerRunning(true)
-              } else {
-                setCurrentPhase('finished')
-              }
-              return 0
-            }
-            return prev - 1
-          })
         }
       }, 1000)
     }
     return () => {
       if (interval) clearInterval(interval)
+    }
+  }, [timerRunning, timerPaused, startTime, totalDuration, currentPhase, feedbackTime])
+
+  // Effect to handle phone wake/sleep - recalculate time when component becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && timerRunning && !timerPaused && startTime && totalDuration > 0) {
+        // Recalculate time when page becomes visible (phone wakes up)
+        const elapsed = Math.floor((Date.now() - startTime) / 1000)
+        const remaining = totalDuration - elapsed
+        
+        if (remaining <= 0) {
+          // Timer finished while phone was locked
+          setTimerRunning(false)
+          setTimerSeconds(0)
+          playCompletionSound()
+          
+          if (currentPhase === 'practice' && feedbackTime > 0) {
+            setCurrentPhase('feedback')
+            setTotalDuration(feedbackTime * 60)
+            setStartTime(Date.now())
+            setTimerRunning(true)
+          } else {
+            setCurrentPhase('finished')
+          }
+        } else {
+          setTimerSeconds(remaining)
+        }
+      }
+    }
+
+    const handleFocus = () => {
+      if (timerRunning && !timerPaused && startTime && totalDuration > 0) {
+        // Recalculate time when window gains focus
+        const elapsed = Math.floor((Date.now() - startTime) / 1000)
+        const remaining = totalDuration - elapsed
+        
+        if (remaining <= 0) {
+          setTimerRunning(false)
+          setTimerSeconds(0)
+          playCompletionSound()
+          
+          if (currentPhase === 'practice' && feedbackTime > 0) {
+            setCurrentPhase('feedback')
+            setTotalDuration(feedbackTime * 60)
+            setStartTime(Date.now())
+            setTimerRunning(true)
+          } else {
+            setCurrentPhase('finished')
+          }
+        } else {
+          setTimerSeconds(remaining)
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
     }
   }, [timerRunning, timerPaused, startTime, totalDuration, currentPhase, feedbackTime])
 
