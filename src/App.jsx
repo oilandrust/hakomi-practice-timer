@@ -518,6 +518,10 @@ function App() {
         <button
           type="button"
           onClick={() => {
+            // Clear previous session completion data when starting a new session
+            localStorage.removeItem('hakomiCompletedRounds')
+            localStorage.removeItem('hakomiBreakCompleted')
+            
             navigate('/practice', {
               state: {
                 totalMinutes,
