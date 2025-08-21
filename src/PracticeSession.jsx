@@ -239,6 +239,24 @@ function PracticeSession() {
       width: '100%',
       position: 'relative'
     }}>
+      {/* Discreet commit hash - only visible in development */}
+      {import.meta.env.DEV && (
+        <div style={{
+          position: 'fixed',
+          top: '0.5rem',
+          right: '0.5rem',
+          background: 'rgba(0.5, 0.5, 0.5, 0.1)',
+          color: '#ff0000',
+          fontSize: '0.7rem',
+          padding: '0.2rem 0.4rem',
+          borderRadius: '0.25rem',
+          fontFamily: 'monospace',
+          zIndex: 9999,
+          pointerEvents: 'none'
+        }}>
+          {import.meta.env.VITE_COMMIT_HASH || 'dev'}
+        </div>
+      )}
       {/* Navigation bar */}
       <div style={{
         background: 'var(--pico-background-color, #fff)',

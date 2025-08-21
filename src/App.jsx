@@ -30,6 +30,9 @@ function App() {
   const [timingMode, setTimingMode] = useState('during') // 'during' or 'until'
   const [targetEndTime, setTargetEndTime] = useState(null) // Store target end time for "until" mode
 
+  // Debug banner - only show in development
+  const isDevelopment = import.meta.env.DEV
+
   // Convert total minutes to hours and minutes for display
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
@@ -131,6 +134,24 @@ function App() {
 
   return (
     <section>
+      {/* Discreet commit hash - only visible in development */}
+      {isDevelopment && (
+        <div style={{
+          position: 'fixed',
+          top: '0.5rem',
+          right: '0.5rem',
+          background: 'rgba(0, 0, 0, 0.1)',
+          color: '#ff0000',
+          fontSize: '0.7rem',
+          padding: '0.2rem 0.4rem',
+          borderRadius: '0.25rem',
+          fontFamily: 'monospace',
+          zIndex: 9999,
+          pointerEvents: 'none'
+        }}>
+          {import.meta.env.VITE_COMMIT_HASH || 'dev'}
+        </div>
+      )}
       <form>
         <div className="grid">
           <div>
