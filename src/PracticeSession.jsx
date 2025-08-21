@@ -70,6 +70,26 @@ function PracticeSession() {
     }
   }, [])
 
+  // Scroll to top when entering the practice session screen
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  // Add practice-session class to root element for full-width styling
+  useEffect(() => {
+    const rootElement = document.getElementById('root')
+    if (rootElement) {
+      rootElement.classList.add('practice-session')
+    }
+    
+    // Cleanup: remove class when component unmounts
+    return () => {
+      if (rootElement) {
+        rootElement.classList.remove('practice-session')
+      }
+    }
+  }, [])
+
   // Update current time every five seconds to refresh the remaining time display
   useEffect(() => {
     const interval = setInterval(() => {
@@ -81,6 +101,8 @@ function PracticeSession() {
 
   // Auto-select the next available round when entering the screen
   useEffect(() => {
+    if (!sessionData) return
+    
     // Find the first incomplete round
     for (let i = 1; i <= sessionData.rounds; i++) {
       if (!completedRounds.has(i)) {
@@ -95,7 +117,7 @@ function PracticeSession() {
     } else {
       setSelectedRound(null) // All done
     }
-  }, [completedRounds, breakCompleted, sessionData.rounds, sessionData.breakMinutes])
+  }, [completedRounds, breakCompleted, sessionData])
 
   if (!sessionData) {
     return (
@@ -213,9 +235,8 @@ function PracticeSession() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      padding: '1rem',
-      maxWidth: '600px',
-      margin: '0 auto',
+      padding: '0.75rem',
+      width: '100%',
       position: 'relative'
     }}>
       {/* Navigation bar */}
@@ -338,9 +359,9 @@ function PracticeSession() {
       {/* Header with session summary */}
       <div style={{ 
         background: 'var(--pico-card-background-color, #fff)',
-        padding: '1.5rem',
+        padding: '1.25rem',
         borderRadius: '8px',
-        marginBottom: '2rem',
+        marginBottom: '1.5rem',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         <div style={{ 
@@ -374,9 +395,9 @@ function PracticeSession() {
       {/* Round and Break Selection */}
       <div style={{ 
         background: 'var(--pico-card-background-color, #fff)',
-        padding: '1.5rem',
+        padding: '1.25rem',
         borderRadius: '8px',
-        marginBottom: '2rem',
+        marginBottom: '1.5rem',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         {/* Round Buttons Row */}
@@ -385,7 +406,8 @@ function PracticeSession() {
           justifyContent: 'center', 
           gap: '1rem',
           marginBottom: '1.5rem',
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          padding: '0 1rem'
         }}>
           {Array.from({ length: sessionData.rounds }, (_, index) => {
             const roundNumber = index + 1
@@ -397,8 +419,8 @@ function PracticeSession() {
                 key={index}
                 onClick={() => !isCompleted && setSelectedRound(roundNumber)}
                 style={{
-                  width: '60px',
-                  height: '60px',
+                  width: '70px',
+                  height: '70px',
                   borderRadius: '50%',
                   border: 'none',
                   background: isCompleted 
@@ -407,7 +429,7 @@ function PracticeSession() {
                       ? 'var(--pico-primary)' 
                       : 'var(--pico-muted-border-color)',
                   color: isCompleted || isSelected ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
-                  fontSize: '0.9rem',
+                  fontSize: '1rem',
                   fontWeight: 'bold',
                   cursor: isCompleted ? 'default' : 'pointer',
                   transition: 'all 0.2s ease',
@@ -428,8 +450,8 @@ function PracticeSession() {
             <button
               onClick={() => !breakCompleted && setSelectedRound('break')}
               style={{
-                width: '60px',
-                height: '60px',
+                width: '70px',
+                height: '70px',
                 borderRadius: '50%',
                 border: 'none',
                 background: breakCompleted 
@@ -438,7 +460,7 @@ function PracticeSession() {
                     ? 'var(--pico-success)' 
                     : 'var(--pico-success-hover)',
                 color: selectedRound === 'break' || breakCompleted ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
-                fontSize: '0.9rem',
+                fontSize: '1rem',
                 fontWeight: 'bold',
                 cursor: breakCompleted ? 'default' : 'pointer',
                 transition: 'all 0.2s ease',
@@ -624,8 +646,8 @@ function PracticeSession() {
             }
           }}
           style={{
-            padding: '1.5rem 3rem',
-            fontSize: '1.3rem',
+            padding: '1.25rem 1.5rem',
+            fontSize: '1.2rem',
             fontWeight: 'bold',
             background: selectedRound === null 
               ? 'var(--pico-del-color, #b91c1c)' 
@@ -636,7 +658,7 @@ function PracticeSession() {
             border: 'none',
             borderRadius: '10px',
             cursor: 'pointer',
-            minWidth: '250px'
+            width: '100%'
           }}
         >
           {selectedRound === null 
