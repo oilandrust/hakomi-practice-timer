@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 function formatTimer(seconds) {
@@ -23,6 +23,9 @@ function Timer() {
 
   const [timerRunning, setTimerRunning] = useState(false)
   const [timerPaused, setTimerPaused] = useState(false)
+  const [startTime, setStartTime] = useState(null)
+  const [totalDuration, setTotalDuration] = useState(0)
+  
   // Get break duration from localStorage if this is a break session
   const getBreakDuration = () => {
     if (isBreak) {
@@ -35,36 +38,94 @@ function Timer() {
     return adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60
   }
 
-  const [timerSeconds, setTimerSeconds] = useState(getBreakDuration()) // Initialize with appropriate time
   const [currentPhase, setCurrentPhase] = useState(isBreak ? 'break' : 'practice') // 'practice', 'feedback', 'break', 'finished'
   const [pausedSeconds, setPausedSeconds] = useState(0)
 
-  // Timer effect
+  const [timerSeconds, setTimerSeconds] = useState(getBreakDuration())
+
+  // Timer effect with real time checking
   useEffect(() => {
     let interval = null
-    if (timerRunning && !timerPaused && timerSeconds > 0) {
+    if (timerRunning && !timerPaused) {
       interval = setInterval(() => {
-        setTimerSeconds(prev => {
-          if (prev <= 1) {
+        if (startTime && totalDuration > 0) {
+          // Calculate remaining time based on real elapsed time
+          const elapsed = Math.floor((Date.now() - startTime) / 1000)
+          const remaining = totalDuration - elapsed
+          
+          if (remaining <= 0) {
             setTimerRunning(false)
+            setTimerSeconds(0)
+            
+            // Play completion sound
+            playCompletionSound()
+            
             if (currentPhase === 'practice' && feedbackTime > 0) {
               setCurrentPhase('feedback')
-              setTimerSeconds(feedbackTime * 60)
-            } else if (currentPhase === 'break') {
-              setCurrentPhase('finished')
+              setTotalDuration(feedbackTime * 60)
+              setStartTime(Date.now())
+              setTimerRunning(true)
             } else {
               setCurrentPhase('finished')
             }
-            return 0
+          } else {
+            setTimerSeconds(remaining)
           }
-          return prev - 1
-        })
+        } else {
+          // Fallback to traditional countdown
+          setTimerSeconds(prev => {
+            if (prev <= 1) {
+              setTimerRunning(false)
+              setTimerSeconds(0)
+              
+              // Play completion sound
+              playCompletionSound()
+              
+              if (currentPhase === 'practice' && feedbackTime > 0) {
+                setCurrentPhase('feedback')
+                setTotalDuration(feedbackTime * 60)
+                setStartTime(Date.now())
+                setTimerRunning(true)
+              } else {
+                setCurrentPhase('finished')
+              }
+              return 0
+            }
+            return prev - 1
+          })
+        }
       }, 1000)
     }
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [timerRunning, timerPaused, timerSeconds, currentPhase, feedbackTime])
+  }, [timerRunning, timerPaused, startTime, totalDuration, currentPhase, feedbackTime])
+
+  // Function to play completion sound
+  const playCompletionSound = () => {
+    try {
+      // Create audio context for better mobile support
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1)
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2)
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.3)
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4)
+      
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.4)
+    } catch (error) {
+      console.log('Audio playback not supported:', error)
+    }
+  }
 
   // Keep screen awake when timer is running
   useEffect(() => {
@@ -146,6 +207,20 @@ function Timer() {
     }
   }, [isBreak, timerRunning, currentPhase])
 
+  // Initialize totalDuration when component mounts
+  useEffect(() => {
+    if (isBreak) {
+      const sessionData = localStorage.getItem('hakomiSessionData')
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData)
+        setTotalDuration(parsed.breakMinutes * 60)
+      }
+    } else {
+      const duration = adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60
+      setTotalDuration(duration)
+    }
+  }, [isBreak, adjustedTimePerRound, practiceTime])
+
   // Start practice timer
   const startPractice = () => {
     if (isBreak) {
@@ -153,11 +228,17 @@ function Timer() {
       const sessionData = localStorage.getItem('hakomiSessionData')
       if (sessionData) {
         const parsed = JSON.parse(sessionData)
-        setTimerSeconds(parsed.breakMinutes * 60)
+        const duration = parsed.breakMinutes * 60
+        setTotalDuration(duration)
+        setStartTime(Date.now())
+        setTimerSeconds(duration)
         setCurrentPhase('break')
       }
     } else {
-      setTimerSeconds(adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60)
+      const duration = adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60
+      setTotalDuration(duration)
+      setStartTime(Date.now())
+      setTimerSeconds(duration)
       setCurrentPhase('practice')
     }
     setTimerRunning(true)
@@ -166,7 +247,10 @@ function Timer() {
 
   // Start feedback timer
   const startFeedback = () => {
-    setTimerSeconds(feedbackTime * 60)
+    const duration = feedbackTime * 60
+    setTotalDuration(duration)
+    setStartTime(Date.now())
+    setTimerSeconds(duration)
     setCurrentPhase('feedback')
     setTimerRunning(true)
     setTimerPaused(false)
@@ -176,7 +260,9 @@ function Timer() {
   const togglePause = () => {
     if (timerPaused) {
       setTimerPaused(false)
-      setTimerSeconds(pausedSeconds)
+      // Adjust start time to account for paused time
+      const newStartTime = Date.now() - (pausedSeconds * 1000)
+      setStartTime(newStartTime)
     } else {
       setTimerPaused(true)
       setPausedSeconds(timerSeconds)
@@ -187,7 +273,9 @@ function Timer() {
   const resetTimer = () => {
     setTimerRunning(false)
     setTimerPaused(false)
-    setTimerSeconds(0)
+    setStartTime(null)
+    setTotalDuration(0)
+    setTimerSeconds(getBreakDuration())
     setCurrentPhase('practice')
     setPausedSeconds(0)
   }
