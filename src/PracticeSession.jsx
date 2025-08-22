@@ -103,6 +103,9 @@ function PracticeSession() {
   useEffect(() => {
     if (!sessionData) return
     
+    // Don't auto-select if user has manually selected something
+    if (selectedRound && selectedRound !== 1) return
+    
     // Find the first incomplete round
     for (let i = 1; i <= sessionData.rounds; i++) {
       if (!completedRounds.has(i)) {
@@ -117,7 +120,7 @@ function PracticeSession() {
     } else {
       setSelectedRound(null) // All done
     }
-  }, [completedRounds, breakCompleted, sessionData])
+  }, [completedRounds, breakCompleted, sessionData, selectedRound])
 
   if (!sessionData) {
     return (
@@ -257,14 +260,15 @@ function PracticeSession() {
           {import.meta.env.VITE_COMMIT_HASH || 'dev'}
         </div>
       )}
-      {/* Navigation bar */}
-      <div style={{
+      {/* Navigation bar with time info */}
+      <div className="navigation-bar" style={{
         background: 'var(--pico-background-color, #fff)',
         borderBottom: '1px solid var(--pico-muted-border-color, #e9ecef)',
         padding: '1rem',
         marginBottom: '1.5rem',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
         <button
           onClick={() => {
@@ -304,6 +308,37 @@ function PracticeSession() {
         >
           ←
         </button>
+        
+        {/* Time information in the center */}
+        <div className="time-info" style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '2rem',
+          fontSize: '1rem',
+          fontWeight: 'bold'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--pico-primary)'
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>⏱️</span>
+            {formatMinutes(Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000)))}
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--pico-primary)'
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>🕐</span>
+            {formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))}
+          </div>
+        </div>
+        
+        {/* Spacer to balance the layout */}
+        <div style={{ width: '48px' }}></div>
       </div>
 
       {/* Exit Confirmation Popup */}
@@ -374,41 +409,7 @@ function PracticeSession() {
         </div>
       )}
 
-      {/* Header with session summary */}
-      <div style={{ 
-        background: 'var(--pico-card-background-color, #fff)',
-        padding: '1.25rem',
-        borderRadius: '8px',
-        marginBottom: '1.5rem',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-around', 
-          alignItems: 'center',
-          fontSize: '1.2rem',
-          fontWeight: 'bold'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.5rem',
-            color: 'var(--pico-primary)'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>⏱️</span>
-            {formatMinutes(Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000)))}
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.5rem',
-            color: 'var(--pico-primary)'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>🕐</span>
-            {formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))}
-          </div>
-        </div>
-      </div>
+
 
       {/* Round and Break Selection */}
       <div style={{ 
@@ -475,9 +476,9 @@ function PracticeSession() {
                 background: breakCompleted 
                   ? 'var(--pico-success)' 
                   : selectedRound === 'break' 
-                    ? 'var(--pico-success)' 
-                    : 'var(--pico-success-hover)',
-                color: selectedRound === 'break' || breakCompleted ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                    ? 'var(--pico-primary)' 
+                    : 'var(--pico-muted-border-color)',
+                color: breakCompleted || selectedRound === 'break' ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
                 fontSize: '1rem',
                 fontWeight: 'bold',
                 cursor: breakCompleted ? 'default' : 'pointer',
@@ -670,7 +671,7 @@ function PracticeSession() {
             background: selectedRound === null 
               ? 'var(--pico-del-color, #b91c1c)' 
               : selectedRound === 'break' 
-                ? 'var(--pico-success)' 
+                ? 'var(--pico-primary)' 
                 : 'var(--pico-primary)',
             color: 'var(--pico-primary-inverse)',
             border: 'none',

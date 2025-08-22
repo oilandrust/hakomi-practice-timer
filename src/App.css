@@ -104,5 +104,24 @@ input[type="checkbox"] {
 
 /* Removed header compacting; margin is controlled on the article element */
 
+/* Mobile responsive styles for practice session navigation bar */
+@media (max-width: 768px) {
+  .practice-session .navigation-bar {
+    padding: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  .practice-session .time-info {
+    gap: 1rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .practice-session .time-info span {
+    font-size: 1rem !important;
+  }
+}
+
+
+
 
 

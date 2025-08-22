@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/inject-git.js && vite",
+    "dev": "node scripts/inject-git.js && vite --host",
     "build": "node scripts/inject-git.js && vite build",
     "serve": "node server.js",
     "start": "npm run build && npm run serve",
