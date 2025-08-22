@@ -40,6 +40,13 @@ html {
   padding: 0 !important;
 }
 
+/* Override root padding for main planning screen to use full width */
+#root.main-planning {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Reduce spacing between form sections */
 .grid {
   margin-top: 0.5rem !important;

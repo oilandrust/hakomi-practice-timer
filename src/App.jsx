@@ -22,7 +22,7 @@ function formatTime(date) {
 function App() {
   const navigate = useNavigate()
   const [totalMinutes, setTotalMinutes] = useState(60)
-  const [rounds, setRounds] = useState(2)
+  const [rounds, setRounds] = useState(1)
   const [breakMinutes, setBreakMinutes] = useState(0)
   const [landingMinutes, setLandingMinutes] = useState(3)
   const [includeLanding, setIncludeLanding] = useState(true)
@@ -132,6 +132,19 @@ function App() {
     }
   }, [timingMode, targetEndTime, breakMinutes, landingMinutes, includeLanding, availableMinutes])
 
+  // Add main-planning class to root for full-width layout
+  useEffect(() => {
+    const rootElement = document.getElementById('root')
+    if (rootElement) {
+      rootElement.classList.add('main-planning')
+    }
+    return () => {
+      if (rootElement) {
+        rootElement.classList.remove('main-planning')
+      }
+    }
+  }, [])
+
   return (
     <section>
       {/* Discreet commit hash - only visible in development */}
@@ -152,36 +165,42 @@ function App() {
           {import.meta.env.VITE_COMMIT_HASH || 'dev'}
         </div>
       )}
-      <form>
-        <div className="grid">
-          <div>
-            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span>Total session</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 'normal' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="timingMode"
-                    value="during"
-                    checked={timingMode === 'during'}
-                    onChange={(e) => setTimingMode(e.target.value)}
-                    style={{ margin: 0 }}
-                  />
-                  <span>during</span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="timingMode"
-                    value="until"
-                    checked={timingMode === 'until'}
-                    onChange={(e) => setTimingMode(e.target.value)}
-                    style={{ margin: 0 }}
-                  />
-                  <span>until</span>
-                </label>
-              </div>
+      <form style={{ padding: '0.75rem' }}>
+        {/* Total Session Card */}
+        <div style={{ 
+          background: 'var(--pico-card-background-color, #fff)',
+          padding: '1.25rem',
+          borderRadius: '8px',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span>Total session</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 'normal' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="timingMode"
+                  value="during"
+                  checked={timingMode === 'during'}
+                  onChange={(e) => setTimingMode(e.target.value)}
+                  style={{ margin: 0 }}
+                />
+                <span>during</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="timingMode"
+                  value="until"
+                  checked={timingMode === 'until'}
+                  onChange={(e) => setTimingMode(e.target.value)}
+                  style={{ margin: 0 }}
+                />
+                <span>until</span>
+              </label>
             </div>
+          </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               {timingMode === 'during' ? (
                 <>
@@ -378,36 +397,62 @@ function App() {
                   </div>
                 </div>
               )}
+        </div>
+        
+        {/* Rounds Card */}
+        <div style={{ 
+          background: 'var(--pico-card-background-color, #fff)',
+          padding: '1.25rem',
+          borderRadius: '8px',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '1rem' }}>Rounds</div>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button 
+              type="button" 
+              onClick={() => setRounds(1)}
+              className={rounds === 1 ? 'secondary' : 'outline'}
+            >
+              1 round
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setRounds(2)}
+              className={rounds === 2 ? 'secondary' : 'outline'}
+            >
+              2 rounds
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setRounds(3)}
+              className={rounds === 3 ? 'secondary' : 'outline'}
+            >
+              3 rounds
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setRounds(4)}
+              className={rounds === 4 ? 'secondary' : 'outline'}
+            >
+              4 rounds
+            </button>
           </div>
         </div>
         
-        <div className="grid" style={{ marginTop: '1rem' }}>
-          <div>
-            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Rounds</div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <button 
-                type="button" 
-                onClick={() => setRounds(2)}
-                className={rounds === 2 ? 'secondary' : 'outline'}
-              >
-                2 rounds
-              </button>
-              <button 
-                type="button" 
-                onClick={() => setRounds(3)}
-                className={rounds === 3 ? 'secondary' : 'outline'}
-              >
-                3 rounds
-              </button>
-            </div>
-          </div>
-
-        </div>
-        
-        <div className="grid" style={{ marginTop: '1rem' , marginBottom: '0'}}>
-          <div>
-            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem' }}>Break</div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0' }}>
+        {/* Break & Landing Card */}
+        <div style={{ 
+          background: 'var(--pico-card-background-color, #fff)',
+          padding: '1.25rem',
+          borderRadius: '8px',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '1rem' }}>Break & Landing</div>
+          
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Break</div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button 
                 type="button" 
                 onClick={() => setBreakMinutes(0)}
@@ -438,9 +483,7 @@ function App() {
               </button>
             </div>
           </div>
-        </div>
-        
-        <div className="grid" style={{ marginTop: '0rem' }}>
+          
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input
