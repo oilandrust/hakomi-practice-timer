@@ -35,7 +35,7 @@ function Timer() {
         return parsed.breakMinutes * 60
       }
     }
-    return adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60
+    return practiceTime * 60
   }
 
   const [currentPhase, setCurrentPhase] = useState(isBreak ? 'break' : 'practice') // 'practice', 'feedback', 'break', 'finished'
@@ -275,7 +275,7 @@ function Timer() {
         setCurrentPhase('break')
       }
     } else {
-      const duration = adjustedTimePerRound ? adjustedTimePerRound * 60 : practiceTime * 60
+      const duration = practiceTime * 60
       setTotalDuration(duration)
       setStartTime(Date.now())
       setTimerSeconds(duration)
@@ -315,13 +315,17 @@ function Timer() {
     setTimerPaused(false)
     setStartTime(null)
     setTotalDuration(0)
-    setTimerSeconds(getBreakDuration())
-    setCurrentPhase('practice')
+    setTimerSeconds(isBreak ? getBreakDuration() : practiceTime * 60)
+    setCurrentPhase(isBreak ? 'break' : 'practice')
     setPausedSeconds(0)
   }
 
   // Finish round and go back
   const finishRound = () => {
+    if (isBreak) {
+      // Mark break as completed and return to practice session
+      localStorage.setItem('hakomiBreakCompleted', 'true')
+    }
     navigate('/practice')
   }
 
@@ -346,8 +350,7 @@ function Timer() {
       return 'Start Break'
     }
     if (currentPhase === 'practice' && !timerRunning) {
-      const timeToShow = adjustedTimePerRound || practiceTime
-      return `Start ${formatMinutes(timeToShow)} Practice`
+      return `Start ${formatMinutes(practiceTime)} Practice`
     }
     if (currentPhase === 'feedback' && !timerRunning) return `Start ${formatMinutes(feedbackTime)} Feedback`
     if (currentPhase === 'finished') return 'Finish Round'
@@ -512,7 +515,11 @@ function Timer() {
           <button
             onClick={() => {
               setTimerRunning(false)
-              if (currentPhase === 'practice' && feedbackTime > 0) {
+              if (isBreak) {
+                // For breaks, immediately mark as completed and return to practice session
+                localStorage.setItem('hakomiBreakCompleted', 'true')
+                navigate('/practice')
+              } else if (currentPhase === 'practice' && feedbackTime > 0) {
                 setCurrentPhase('feedback')
                 setTimerSeconds(feedbackTime * 60)
               } else {

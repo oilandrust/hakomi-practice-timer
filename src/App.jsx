@@ -22,7 +22,7 @@ function formatTime(date) {
 function App() {
   const navigate = useNavigate()
   const [totalMinutes, setTotalMinutes] = useState(60)
-  const [rounds, setRounds] = useState(1)
+  const [rounds, setRounds] = useState(2)
   const [breakMinutes, setBreakMinutes] = useState(0)
   const [landingMinutes, setLandingMinutes] = useState(3)
   const [includeLanding, setIncludeLanding] = useState(true)
@@ -448,10 +448,9 @@ function App() {
           marginBottom: '1.5rem',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
-          <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '1rem' }}>Break & Landing</div>
+          <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '1rem' }}>Break</div>
           
           <div style={{ marginBottom: '1rem' }}>
-            <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Break</div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button 
                 type="button" 
@@ -511,109 +510,116 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* Session Summary & Start Card */}
+        <div style={{ 
+          background: 'var(--pico-card-background-color, #fff)',
+          padding: '1.25rem',
+          borderRadius: '8px',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          {error ? (
+            <p role="status" style={{ color: 'var(--pico-del-color, #b91c1c)', margin: '0 0 1rem 0' }}>{error}</p>
+          ) : (
+            <>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <header style={{ marginBottom: '1rem' }}>
+                  <strong style={{ fontSize: '1.2rem' }}>Practice Session: {formatMinutes(totalMinutes)}</strong>
+                </header>
+                <p style={{ fontSize: '1.25rem', margin: '0 0 0.5rem 0' }}>
+                  {rounds} round{rounds > 1 ? 's' : ''} of <b>{formatMinutes(perRoundMinutes)}</b>
+                </p>
+                {breakMinutes > 0 && (
+                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
+                    {formatMinutes(breakMinutes)} break
+                  </p>
+                )}
+                {includeLanding && landingMinutes > 0 && (
+                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
+                    {formatMinutes(landingMinutes)} to land and prepare
+                  </p>
+                )}
+                <div style={{ 
+                  marginTop: '1rem', 
+                  paddingTop: '0.75rem', 
+                  borderTop: '1px solid rgba(0,0,0,0.1)',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  justifyContent: 'center',
+                  fontSize: '0.9rem',
+                  opacity: 0.8
+                }}>
+                  <span>
+                    Start <strong>{formatTime(startTime)}</strong>, end <strong>{formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}</strong>
+                  </span>
+                  <button 
+                    type="button" 
+                    onClick={() => setStartTime(new Date())}
+                    style={{ 
+                      fontSize: '1.1rem', 
+                      padding: '0.35rem',
+                      opacity: 0.8,
+                      background: 'transparent',
+                      border: '1px solid var(--pico-primary)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      width: '28px',
+                      height: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--pico-primary)',
+                      lineHeight: '1',
+                      alignSelf: 'baseline'
+                    }}
+                    title="Update start time"
+                  >
+                    ↻
+                  </button>
+                </div>
+              </div>
+
+              {/* Let's go button */}
+              <button
+                type="button"
+                onClick={() => {
+                  // Clear previous session completion data when starting a new session
+                  localStorage.removeItem('hakomiCompletedRounds')
+                  localStorage.removeItem('hakomiBreakCompleted')
+                  
+                  navigate('/practice', {
+                    state: {
+                      totalMinutes,
+                      rounds,
+                      breakMinutes,
+                      landingMinutes,
+                      includeLanding,
+                      startTime,
+                      perRoundMinutes,
+                      availableMinutes
+                    }
+                  })
+                }}
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  background: 'var(--pico-primary)',
+                  color: 'var(--pico-primary-inverse)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Let's go!
+              </button>
+            </>
+          )}
+        </div>
       </form>
-
-      {error ? (
-        <article style={{ marginTop: '0.75rem' }}>
-          <p role="status" style={{ color: 'var(--pico-del-color, #b91c1c)' }}>{error}</p>
-        </article>
-      ) : (
-        <article style={{ marginTop: '0.75rem' }}>
-          <header>
-            <strong>Practice Session: {formatMinutes(totalMinutes)}</strong>
-          </header>
-          <p style={{ fontSize: '1.25rem', margin: 0 }}>
-            {rounds} round{rounds > 1 ? 's' : ''} of <b>{formatMinutes(perRoundMinutes)}</b>
-          </p>
-          {breakMinutes > 0 && (
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '1.1rem' }}>
-              {formatMinutes(breakMinutes)} break
-            </p>
-          )}
-          {includeLanding && landingMinutes > 0 && (
-            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
-              {formatMinutes(landingMinutes)} to land and prepare
-            </p>
-          )}
-          <footer style={{ 
-            marginTop: '1rem', 
-            paddingTop: '0.75rem', 
-            borderTop: '1px solid rgba(0,0,0,0.1)',
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.5rem', 
-            justifyContent: 'center',
-            fontSize: '0.9rem',
-            opacity: 0.8
-          }}>
-            <span>
-              Start <strong>{formatTime(startTime)}</strong>, end <strong>{formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}</strong>
-            </span>
-            <button 
-              type="button" 
-              onClick={() => setStartTime(new Date())}
-              style={{ 
-                fontSize: '1.1rem', 
-                padding: '0.35rem',
-                opacity: 0.8,
-                background: 'transparent',
-                border: '1px solid var(--pico-primary)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                width: '28px',
-                height: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--pico-primary)',
-                lineHeight: '1',
-                alignSelf: 'baseline'
-              }}
-              title="Update start time"
-            >
-              ↻
-            </button>
-          </footer>
-        </article>
-      )}
-
-      {/* Let's go button */}
-      <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-        <button
-          type="button"
-          onClick={() => {
-            // Clear previous session completion data when starting a new session
-            localStorage.removeItem('hakomiCompletedRounds')
-            localStorage.removeItem('hakomiBreakCompleted')
-            
-            navigate('/practice', {
-              state: {
-                totalMinutes,
-                rounds,
-                breakMinutes,
-                landingMinutes,
-                includeLanding,
-                startTime,
-                perRoundMinutes,
-                availableMinutes
-              }
-            })
-          }}
-          style={{
-            width: '100%',
-            padding: '1rem',
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            background: 'var(--pico-primary)',
-            color: 'var(--pico-primary-inverse)',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          Let's go!
-        </button>
-      </div>
     </section>
   )
 }

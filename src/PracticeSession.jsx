@@ -24,6 +24,12 @@ function formatTimer(seconds) {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
+function formatHoursMinutes(minutes) {
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
+}
+
 function PracticeSession() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -525,8 +531,8 @@ function PracticeSession() {
           color: selectedRound === 'break' ? 'var(--pico-success)' : 'var(--pico-primary)'
         }}>
           {selectedRound === 'break' 
-            ? formatTimer(sessionData.breakMinutes * 60)
-            : formatTimer(adjustedTimePerRound * 60)
+            ? formatHoursMinutes(sessionData.breakMinutes)
+            : formatHoursMinutes(adjustedTimePerRound)
           }
         </div>
       )}
