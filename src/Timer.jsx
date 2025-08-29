@@ -2,9 +2,15 @@ import { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 function formatTimer(seconds) {
-  const mins = Math.floor(seconds / 60)
+  const hours = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
   const secs = seconds % 60
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  
+  if (hours > 0) {
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  } else {
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 }
 
 function formatMinutes(totalMinutes) {
@@ -64,10 +70,7 @@ function Timer() {
             
             if (currentPhase === 'practice' && feedbackTime > 0) {
               setCurrentPhase('feedback')
-              setTotalDuration(feedbackTime * 60)
-              setStartTime(Date.now())
-              setTimerRunning(true)
-              setTotalPausedTime(0) // Reset paused time for new phase
+              setTimerSeconds(feedbackTime * 60)
             } else {
               setCurrentPhase('finished')
             }
@@ -98,9 +101,7 @@ function Timer() {
           
           if (currentPhase === 'practice' && feedbackTime > 0) {
             setCurrentPhase('feedback')
-            setTotalDuration(feedbackTime * 60)
-            setStartTime(Date.now())
-            setTimerRunning(true)
+            setTimerSeconds(feedbackTime * 60)
           } else {
             setCurrentPhase('finished')
           }
@@ -123,9 +124,7 @@ function Timer() {
           
           if (currentPhase === 'practice' && feedbackTime > 0) {
             setCurrentPhase('feedback')
-            setTotalDuration(feedbackTime * 60)
-            setStartTime(Date.now())
-            setTimerRunning(true)
+            setTimerSeconds(feedbackTime * 60)
           } else {
             setCurrentPhase('finished')
           }
@@ -178,6 +177,30 @@ function Timer() {
       console.log('Audio playback not supported:', error)
     }
   }
+
+  // Handle Android back button to behave like the X button
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // Prevent default back navigation
+      event.preventDefault()
+      
+      // Navigate back to practice session (same as X button)
+      navigate('/practice')
+      
+      // Push the current state back to prevent actual navigation
+      window.history.pushState(null, '', window.location.href)
+    }
+
+    // Push initial state to enable back button handling
+    window.history.pushState(null, '', window.location.href)
+    
+    // Add event listener for back button
+    window.addEventListener('popstate', handlePopState)
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [navigate])
 
   // Keep screen awake when timer is running
   useEffect(() => {

@@ -120,6 +120,27 @@ function App() {
     }
   }, [totalMinutes, rounds, breakMinutes, landingMinutes, includeLanding])
 
+  // Handle Android back button on main screen
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // On main screen, prevent back navigation (app should stay open)
+      event.preventDefault()
+      
+      // Push the current state back to prevent actual navigation
+      window.history.pushState(null, '', window.location.href)
+    }
+
+    // Push initial state to enable back button handling
+    window.history.pushState(null, '', window.location.href)
+    
+    // Add event listener for back button
+    window.addEventListener('popstate', handlePopState)
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [])
+
   // Adjust start time when parameters change in "until" mode
   useEffect(() => {
     if (timingMode === 'until' && targetEndTime) {

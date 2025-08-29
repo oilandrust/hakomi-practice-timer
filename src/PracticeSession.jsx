@@ -96,6 +96,43 @@ function PracticeSession() {
     }
   }, [])
 
+  // Handle Android back button to behave like the top arrow button
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // Prevent default back navigation
+      event.preventDefault()
+      
+      // Check if all rounds and break are done
+      const allRoundsDone = Array.from({ length: sessionData?.rounds || 0 }, (_, i) => i + 1)
+        .every(round => completedRounds.has(round))
+      const allDone = allRoundsDone && (sessionData?.breakMinutes === 0 || breakCompleted)
+      
+      if (allDone) {
+        // If all done, clear data and go to main screen
+        localStorage.removeItem('hakomiSessionData')
+        localStorage.removeItem('hakomiCompletedRounds')
+        localStorage.removeItem('hakomiBreakCompleted')
+        navigate('/')
+      } else {
+        // Show exit confirmation popup
+        setShowExitConfirmation(true)
+      }
+      
+      // Push the current state back to prevent actual navigation
+      window.history.pushState(null, '', window.location.href)
+    }
+
+    // Push initial state to enable back button handling
+    window.history.pushState(null, '', window.location.href)
+    
+    // Add event listener for back button
+    window.addEventListener('popstate', handlePopState)
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [completedRounds, breakCompleted, sessionData, navigate])
+
   // Update current time every five seconds to refresh the remaining time display
   useEffect(() => {
     const interval = setInterval(() => {
