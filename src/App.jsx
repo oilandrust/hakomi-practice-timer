@@ -29,6 +29,7 @@ function App() {
   const [startTime, setStartTime] = useState(new Date())
   const [timingMode, setTimingMode] = useState('during') // 'during' or 'until'
   const [targetEndTime, setTargetEndTime] = useState(null) // Store target end time for "until" mode
+  const [timingFlexibility, setTimingFlexibility] = useState('onTime') // 'onTime' or 'flexible'
 
   // Debug banner - only show in development
   const isDevelopment = import.meta.env.DEV
@@ -200,6 +201,7 @@ function App() {
                 <span>until</span>
               </label>
             </div>
+            
           </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               {timingMode === 'during' ? (
@@ -397,6 +399,30 @@ function App() {
                   </div>
                 </div>
               )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 'normal' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="timingFlexibility"
+                  value="onTime"
+                  checked={timingFlexibility === 'onTime'}
+                  onChange={(e) => setTimingFlexibility(e.target.value)}
+                  style={{ margin: 0 }}
+                />
+                <span>Finish on time</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="timingFlexibility"
+                  value="flexible"
+                  checked={timingFlexibility === 'flexible'}
+                  onChange={(e) => setTimingFlexibility(e.target.value)}
+                  style={{ margin: 0 }}
+                />
+                <span>Flexible</span>
+              </label>
+            </div>
         </div>
         
         {/* Rounds Card */}
@@ -607,7 +633,8 @@ function App() {
                       includeLanding,
                       startTime,
                       perRoundMinutes,
-                      availableMinutes
+                      availableMinutes,
+                      timingFlexibility
                     }
                   })
                 }}

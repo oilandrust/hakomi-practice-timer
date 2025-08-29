@@ -139,16 +139,35 @@ function PracticeSession() {
     )
   }
 
-  // Calculate remaining time and adjust time per round dynamically
-  const remainingTime = Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000))
   const remainingBreakTime = sessionData.breakMinutes > 0 && !breakCompleted ? sessionData.breakMinutes : 0
   const remainingRounds = Array.from({ length: sessionData.rounds }, (_, i) => i + 1).filter(round => !completedRounds.has(round))
   const downtimePerRound = sessionData.includeLanding && sessionData.landingMinutes > 0 
     ? Math.ceil(sessionData.landingMinutes / sessionData.rounds)
     : 0
-  const adjustedTimePerRound = remainingRounds.length > 0 
-    ? Math.max(1, Math.floor((remainingTime - remainingBreakTime) / remainingRounds.length)-downtimePerRound)
-    : sessionData.perRoundMinutes
+
+  // Calculate remaining time and adjust time per round dynamically
+  let remainingTime;
+  if (sessionData.timingFlexibility === 'flexible') {
+    remainingTime = Math.max(0, remainingRounds.length * (sessionData.perRoundMinutes + downtimePerRound)
+    + remainingBreakTime)
+  } else {
+      // Calculate remaining time and adjust time per round dynamically
+   remainingTime = Math.max(0, 
+    sessionData.totalMinutes 
+    - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000))
+  }
+  
+  // Calculate adjusted time per round based on timing flexibility
+  let adjustedTimePerRound
+  if (sessionData.timingFlexibility === 'flexible') {
+    // Flexible mode: use original per-round time minus downtime
+    adjustedTimePerRound = Math.max(1, sessionData.perRoundMinutes)
+  } else {
+    // On-time mode: adjust based on remaining time (current behavior)
+    adjustedTimePerRound = remainingRounds.length > 0 
+      ? Math.max(1, Math.floor((remainingTime - remainingBreakTime) / remainingRounds.length) - downtimePerRound)
+      : sessionData.perRoundMinutes
+  }
 
   // Calculate practice time based on adjusted time per round
   const practiceTime = Math.max(1, adjustedTimePerRound - feedbackTime)
@@ -333,7 +352,10 @@ function PracticeSession() {
             color: 'var(--pico-primary)'
           }}>
             <span style={{ fontSize: '1.2rem' }}>⏱️</span>
-            {formatMinutes(Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000)))}
+            {sessionData.timingFlexibility === 'flexible'
+              ? formatMinutes(Math.max(0, remainingTime))
+              : formatMinutes(Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000)))
+            }
           </div>
           <div style={{ 
             display: 'flex', 
@@ -342,7 +364,10 @@ function PracticeSession() {
             color: 'var(--pico-primary)'
           }}>
             <span style={{ fontSize: '1.2rem' }}>🕐</span>
-            {formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))}
+            {sessionData.timingFlexibility === 'flexible' 
+              ? formatTime(new Date(currentTime + remainingTime * 60000))
+              : formatTime(new Date(sessionData.startTime.getTime() + sessionData.totalMinutes * 60000))
+            }
           </div>
         </div>
         
