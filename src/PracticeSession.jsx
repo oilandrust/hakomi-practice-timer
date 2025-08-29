@@ -458,7 +458,6 @@ function PracticeSession() {
           display: 'flex', 
           justifyContent: 'center', 
           gap: '1rem',
-          marginBottom: '1.5rem',
           flexWrap: 'wrap',
           padding: '0 1rem'
         }}>

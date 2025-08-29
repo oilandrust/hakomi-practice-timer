@@ -434,34 +434,78 @@ function App() {
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
           <div style={{ textAlign: 'left', fontWeight: 'bold', marginBottom: '1rem' }}>Rounds</div>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button 
               type="button" 
               onClick={() => setRounds(1)}
               className={rounds === 1 ? 'secondary' : 'outline'}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                padding: '0',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
-              1 round
+              1
             </button>
             <button 
               type="button" 
               onClick={() => setRounds(2)}
               className={rounds === 2 ? 'secondary' : 'outline'}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                padding: '0',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
-              2 rounds
+              2
             </button>
             <button 
               type="button" 
               onClick={() => setRounds(3)}
               className={rounds === 3 ? 'secondary' : 'outline'}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                padding: '0',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
-              3 rounds
+              3
             </button>
             <button 
               type="button" 
               onClick={() => setRounds(4)}
               className={rounds === 4 ? 'secondary' : 'outline'}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                padding: '0',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
-              4 rounds
+              4
             </button>
           </div>
         </div>
