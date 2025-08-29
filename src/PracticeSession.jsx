@@ -143,12 +143,15 @@ function PracticeSession() {
   const remainingTime = Math.max(0, sessionData.totalMinutes - Math.floor((currentTime - sessionData.startTime.getTime()) / 60000))
   const remainingBreakTime = sessionData.breakMinutes > 0 && !breakCompleted ? sessionData.breakMinutes : 0
   const remainingRounds = Array.from({ length: sessionData.rounds }, (_, i) => i + 1).filter(round => !completedRounds.has(round))
+  const downtimePerRound = sessionData.includeLanding && sessionData.landingMinutes > 0 
+    ? Math.ceil(sessionData.landingMinutes / sessionData.rounds)
+    : 0
   const adjustedTimePerRound = remainingRounds.length > 0 
-    ? Math.max(1, Math.floor((remainingTime - remainingBreakTime) / remainingRounds.length))
+    ? Math.max(1, Math.floor((remainingTime - remainingBreakTime) / remainingRounds.length)-downtimePerRound)
     : sessionData.perRoundMinutes
 
   // Calculate practice time based on adjusted time per round
-  const practiceTime = adjustedTimePerRound - feedbackTime
+  const practiceTime = Math.max(1, adjustedTimePerRound - feedbackTime)
   const totalRoundTime = adjustedTimePerRound
 
 
@@ -449,11 +452,15 @@ function PracticeSession() {
                   borderRadius: '50%',
                   border: 'none',
                   background: isCompleted 
-                    ? 'var(--pico-success)' 
+                    ? 'rgba(128, 128, 128, 0.3)' 
                     : isSelected 
                       ? 'var(--pico-primary)' 
                       : 'var(--pico-muted-border-color)',
-                  color: isCompleted || isSelected ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                  color: isCompleted 
+                    ? 'var(--pico-color)' 
+                    : isSelected 
+                      ? 'var(--pico-primary-inverse)' 
+                      : 'var(--pico-color)',
                   fontSize: '1rem',
                   fontWeight: 'bold',
                   cursor: isCompleted ? 'default' : 'pointer',
@@ -480,11 +487,15 @@ function PracticeSession() {
                 borderRadius: '50%',
                 border: 'none',
                 background: breakCompleted 
-                  ? 'var(--pico-success)' 
+                  ? 'rgba(128, 128, 128, 0.3)' 
                   : selectedRound === 'break' 
                     ? 'var(--pico-primary)' 
                     : 'var(--pico-muted-border-color)',
-                color: breakCompleted || selectedRound === 'break' ? 'var(--pico-primary-inverse)' : 'var(--pico-color)',
+                color: breakCompleted 
+                  ? 'var(--pico-color)' 
+                  : selectedRound === 'break' 
+                    ? 'var(--pico-primary-inverse)' 
+                    : 'var(--pico-color)',
                 fontSize: '1rem',
                 fontWeight: 'bold',
                 cursor: breakCompleted ? 'default' : 'pointer',
@@ -620,7 +631,7 @@ function PracticeSession() {
             }}>
               <div style={{ 
                 textAlign: 'center',
-                color: '#ffffff',
+                color: 'var(--pico-primary)',
                 fontWeight: 'bold'
               }}>
                 <div style={{ fontSize: '1.2rem' }}>Practice</div>
@@ -630,7 +641,7 @@ function PracticeSession() {
               </div>
               <div style={{ 
                 textAlign: 'center',
-                color: '#ffffff',
+                color: 'var(--pico-primary)',
                 fontWeight: 'bold'
               }}>
                 <div style={{ fontSize: '1.2rem' }}>Feedback</div>

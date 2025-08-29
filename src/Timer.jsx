@@ -39,7 +39,8 @@ function Timer() {
   }
 
   const [currentPhase, setCurrentPhase] = useState(isBreak ? 'break' : 'practice') // 'practice', 'feedback', 'break', 'finished'
-  const [pausedSeconds, setPausedSeconds] = useState(0)
+  const [totalPausedTime, setTotalPausedTime] = useState(0)
+  const [pauseStartTime, setPauseStartTime] = useState(null)
 
   const [timerSeconds, setTimerSeconds] = useState(getBreakDuration())
 
@@ -48,10 +49,11 @@ function Timer() {
     let interval = null
     if (timerRunning && !timerPaused) {
       interval = setInterval(() => {
-        // Always calculate based on real elapsed time
+        // Always calculate based on real elapsed time, accounting for paused time
         if (startTime && totalDuration > 0) {
           const elapsed = Math.floor((Date.now() - startTime) / 1000)
-          const remaining = totalDuration - elapsed
+          const actualElapsed = elapsed - totalPausedTime
+          const remaining = totalDuration - actualElapsed
           
           if (remaining <= 0) {
             setTimerRunning(false)
@@ -65,6 +67,7 @@ function Timer() {
               setTotalDuration(feedbackTime * 60)
               setStartTime(Date.now())
               setTimerRunning(true)
+              setTotalPausedTime(0) // Reset paused time for new phase
             } else {
               setCurrentPhase('finished')
             }
@@ -146,22 +149,31 @@ function Timer() {
     try {
       // Create audio context for better mobile support
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
       
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
+      // Create a gong-like sound using multiple oscillators
+      const baseFreq = 200 // Base frequency for gong
+      const harmonics = [1, 2.76, 5.4, 8.54, 13.3] // Harmonic series for gong sound
       
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1)
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2)
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.3)
+      harmonics.forEach((harmonic, index) => {
+        const oscillator = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
+        
+        oscillator.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+        
+        // Set frequency based on harmonic
+        oscillator.frequency.setValueAtTime(baseFreq * harmonic, audioContext.currentTime)
+        
+        // Create gong-like envelope
+        const startGain = 0.15 / (index + 1) // Higher harmonics start quieter
+        gainNode.gain.setValueAtTime(startGain, audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 3.0)
+        
+        // Start and stop oscillator
+        oscillator.start(audioContext.currentTime)
+        oscillator.stop(audioContext.currentTime + 3.0)
+      })
       
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4)
-      
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + 0.4)
     } catch (error) {
       console.log('Audio playback not supported:', error)
     }
@@ -283,6 +295,8 @@ function Timer() {
     }
     setTimerRunning(true)
     setTimerPaused(false)
+    setTotalPausedTime(0)
+    setPauseStartTime(null)
   }
 
   // Start feedback timer
@@ -294,18 +308,24 @@ function Timer() {
     setCurrentPhase('feedback')
     setTimerRunning(true)
     setTimerPaused(false)
+    setTotalPausedTime(0)
+    setPauseStartTime(null)
   }
 
   // Pause/Resume timer
   const togglePause = () => {
     if (timerPaused) {
+      // Resume: add the current pause duration to total paused time
+      if (pauseStartTime) {
+        const currentPauseDuration = Math.floor((Date.now() - pauseStartTime) / 1000)
+        setTotalPausedTime(prev => prev + currentPauseDuration)
+      }
       setTimerPaused(false)
-      // Adjust start time to account for paused time
-      const newStartTime = Date.now() - (pausedSeconds * 1000)
-      setStartTime(newStartTime)
+      setPauseStartTime(null)
     } else {
+      // Pause: record when we started pausing
       setTimerPaused(true)
-      setPausedSeconds(timerSeconds)
+      setPauseStartTime(Date.now())
     }
   }
 
@@ -317,7 +337,8 @@ function Timer() {
     setTotalDuration(0)
     setTimerSeconds(isBreak ? getBreakDuration() : practiceTime * 60)
     setCurrentPhase(isBreak ? 'break' : 'practice')
-    setPausedSeconds(0)
+    setTotalPausedTime(0)
+    setPauseStartTime(null)
   }
 
   // Finish round and go back

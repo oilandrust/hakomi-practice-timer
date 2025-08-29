@@ -506,7 +506,55 @@ function App() {
                   opacity: includeLanding ? 1 : 0.5
                 }}
               />
-              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>min to land and prepare</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setLandingMinutes(Math.max(1, landingMinutes + 1))}
+                  disabled={!includeLanding}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    padding: '0',
+                    fontSize: '16px',
+                    lineHeight: '1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: includeLanding ? 'pointer' : 'not-allowed',
+                    background: includeLanding ? 'var(--pico-primary)' : 'var(--pico-muted-color)',
+                    color: includeLanding ? 'var(--pico-primary-inverse)' : 'var(--pico-muted-color)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    opacity: includeLanding ? 1 : 0.5
+                  }}
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLandingMinutes(Math.max(1, landingMinutes - 1))}
+                  disabled={!includeLanding}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    padding: '0',
+                    fontSize: '16px',
+                    lineHeight: '1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: includeLanding ? 'pointer' : 'not-allowed',
+                    background: includeLanding ? 'var(--pico-primary)' : 'var(--pico-muted-color)',
+                    color: includeLanding ? 'var(--pico-primary-inverse)' : 'var(--pico-muted-color)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    opacity: includeLanding ? 1 : 0.5
+                  }}
+                >
+                  −
+                </button>
+              </div>
+              <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>min downtime (landing, wrap up, etc...)</span>
             </div>
           </div>
         </div>
@@ -525,7 +573,7 @@ function App() {
             <>
               <div style={{ marginBottom: '1.5rem' }}>
                 <header style={{ marginBottom: '1rem' }}>
-                  <strong style={{ fontSize: '1.2rem' }}>Practice Session: {formatMinutes(totalMinutes)}</strong>
+                  <strong style={{ fontSize: '1.2rem' }}>Practice Session: {formatMinutes(totalMinutes)}, until {formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}</strong>
                 </header>
                 <p style={{ fontSize: '1.25rem', margin: '0 0 0.5rem 0' }}>
                   {rounds} round{rounds > 1 ? 's' : ''} of <b>{formatMinutes(perRoundMinutes)}</b>
@@ -537,48 +585,9 @@ function App() {
                 )}
                 {includeLanding && landingMinutes > 0 && (
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
-                    {formatMinutes(landingMinutes)} to land and prepare
+                    {formatMinutes(landingMinutes)} downtime
                   </p>
                 )}
-                <div style={{ 
-                  marginTop: '1rem', 
-                  paddingTop: '0.75rem', 
-                  borderTop: '1px solid rgba(0,0,0,0.1)',
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.5rem', 
-                  justifyContent: 'center',
-                  fontSize: '0.9rem',
-                  opacity: 0.8
-                }}>
-                  <span>
-                    Start <strong>{formatTime(startTime)}</strong>, end <strong>{formatTime(new Date(startTime.getTime() + totalMinutes * 60000))}</strong>
-                  </span>
-                  <button 
-                    type="button" 
-                    onClick={() => setStartTime(new Date())}
-                    style={{ 
-                      fontSize: '1.1rem', 
-                      padding: '0.35rem',
-                      opacity: 0.8,
-                      background: 'transparent',
-                      border: '1px solid var(--pico-primary)',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      width: '28px',
-                      height: '28px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--pico-primary)',
-                      lineHeight: '1',
-                      alignSelf: 'baseline'
-                    }}
-                    title="Update start time"
-                  >
-                    ↻
-                  </button>
-                </div>
               </div>
 
               {/* Let's go button */}
