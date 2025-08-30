@@ -47,6 +47,7 @@ function Timer() {
   const [currentPhase, setCurrentPhase] = useState(isBreak ? 'break' : 'practice') // 'practice', 'feedback', 'break', 'finished'
   const [totalPausedTime, setTotalPausedTime] = useState(0)
   const [pauseStartTime, setPauseStartTime] = useState(null)
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false)
 
   const [timerSeconds, setTimerSeconds] = useState(getBreakDuration())
 
@@ -446,19 +447,24 @@ function Timer() {
         display: 'flex',
         justifyContent: 'flex-end',
         padding: '1rem',
-        background: 'var(--pico-background-color)',
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid var(--pico-muted-color)',
         zIndex: 1000
       }}>
         <button
-          onClick={() => navigate('/practice')}
+          onClick={() => {
+            // Check if timer has been started (has startTime)
+            if (startTime) {
+              setShowExitConfirmation(true)
+            } else {
+              // If timer hasn't started, navigate directly
+              navigate('/practice')
+            }
+          }}
           style={{
             padding: '0.5rem',
             fontSize: '1.2rem',
             background: 'transparent',
             color: 'var(--pico-muted-color)',
-            border: '2px solid var(--pico-muted-color)',
             borderRadius: '50%',
             cursor: 'pointer',
             width: '2.5rem',
@@ -589,6 +595,84 @@ function Timer() {
 
 
       </div>
+
+      {/* Exit Confirmation Popup */}
+      {showExitConfirmation && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--pico-card-background-color, #fff)',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+          }}>
+            <h3 style={{ margin: '0 0 1.5rem 0' }}>Finish Round?</h3>
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => setShowExitConfirmation(false)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '1rem',
+                  background: 'var(--pico-muted-border-color)',
+                  color: 'var(--pico-color)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowExitConfirmation(false)
+                  
+                  // Mark the round as completed before navigating
+                  if (roundNumber && roundNumber !== 'break') {
+                    const storedCompletedRounds = localStorage.getItem('hakomiCompletedRounds')
+                    const completedRounds = storedCompletedRounds ? JSON.parse(storedCompletedRounds) : []
+                    if (!completedRounds.includes(roundNumber)) {
+                      completedRounds.push(roundNumber)
+                      localStorage.setItem('hakomiCompletedRounds', JSON.stringify(completedRounds))
+                    }
+                  } else if (isBreak) {
+                    // Mark break as completed
+                    localStorage.setItem('hakomiBreakCompleted', 'true')
+                  }
+                  
+                  navigate('/practice')
+                }}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '1rem',
+                  background: 'var(--pico-del-color, #b91c1c)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   )
